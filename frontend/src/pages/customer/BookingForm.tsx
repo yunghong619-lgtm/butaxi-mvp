@@ -60,6 +60,15 @@ export default function BookingForm() {
   const canProceedStep2 = formData.returnAddress && formData.homeAddress && formData.desiredReturnTime;
   const canSubmit = canProceedStep1 && canProceedStep2;
 
+  // 디버깅용 (콘솔에 출력)
+  console.log('Step:', step);
+  console.log('canProceedStep2:', canProceedStep2);
+  console.log('formData:', {
+    returnAddress: formData.returnAddress,
+    homeAddress: formData.homeAddress,
+    desiredReturnTime: formData.desiredReturnTime,
+  });
+
   // 지도용 stops 데이터 생성 (TripMap 컴포넌트 타입에 맞게)
   const outboundStops = [
     {
@@ -266,11 +275,21 @@ export default function BookingForm() {
                 ← 이전
               </button>
               <button
-                onClick={() => setStep(3)}
+                onClick={() => {
+                  console.log('다음 단계 버튼 클릭!');
+                  console.log('현재 step:', step);
+                  console.log('canProceedStep2:', canProceedStep2);
+                  if (canProceedStep2) {
+                    setStep(3);
+                  } else {
+                    alert('모든 필드를 입력해주세요:\n- 돌아올 출발지\n- 집 주소\n- 귀가 시간');
+                  }
+                }}
                 disabled={!canProceedStep2}
                 className="flex-1 bg-black text-white py-5 rounded-2xl font-bold text-lg hover:bg-gray-900 transition-all shadow-lg hover:shadow-xl disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 다음 단계 →
+                {!canProceedStep2 && <span className="ml-2 text-sm">(입력 필요)</span>}
               </button>
             </div>
           </div>
@@ -333,7 +352,7 @@ export default function BookingForm() {
               </div>
 
               {/* 지도 */}
-              {formData.pickupLat && formData.pickupLng && (
+              {formData.pickupLat && formData.pickupLng ? (
                 <div className="rounded-2xl overflow-hidden shadow-md border-2 border-white">
                   <TripMap
                     stops={outboundStops}
@@ -341,6 +360,14 @@ export default function BookingForm() {
                     showRoute={true}
                     height="250px"
                   />
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-gray-100 p-8 text-center border-2 border-gray-200">
+                  <p className="text-gray-600">지도 정보를 불러올 수 없습니다</p>
+                  <p className="text-sm text-gray-500 mt-2">주소 검색 시 자동으로 표시됩니다</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    좌표: {formData.pickupLat}, {formData.pickupLng}
+                  </p>
                 </div>
               )}
             </div>
@@ -390,7 +417,7 @@ export default function BookingForm() {
               </div>
 
               {/* 지도 */}
-              {formData.returnLat && formData.returnLng && (
+              {formData.returnLat && formData.returnLng ? (
                 <div className="rounded-2xl overflow-hidden shadow-md border-2 border-white">
                   <TripMap
                     stops={returnStops}
@@ -398,6 +425,14 @@ export default function BookingForm() {
                     showRoute={true}
                     height="250px"
                   />
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-gray-100 p-8 text-center border-2 border-gray-200">
+                  <p className="text-gray-600">지도 정보를 불러올 수 없습니다</p>
+                  <p className="text-sm text-gray-500 mt-2">주소 검색 시 자동으로 표시됩니다</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    좌표: {formData.returnLat}, {formData.returnLng}
+                  </p>
                 </div>
               )}
             </div>
