@@ -22,6 +22,24 @@ export class RideController {
         specialRequests,
       } = req.body;
 
+      // User 자동 생성 (없는 경우)
+      const existingUser = await prisma.user.findUnique({
+        where: { id: customerId },
+      });
+
+      if (!existingUser) {
+        console.log(`👤 새 사용자 자동 생성: ${customerId}`);
+        await prisma.user.create({
+          data: {
+            id: customerId,
+            name: `고객${customerId.slice(0, 6)}`,
+            phoneNumber: '010-0000-0000',
+            role: 'CUSTOMER',
+            email: `customer${customerId.slice(0, 6)}@butaxi.com`,
+          },
+        });
+      }
+
       // 주소를 좌표로 변환
       const pickupLocation = await kakaoService.searchAddress(pickupAddress);
       const dropoffLocation = await kakaoService.searchAddress(dropoffAddress);
