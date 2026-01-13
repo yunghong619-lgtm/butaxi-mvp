@@ -182,12 +182,78 @@ export class MatchingService {
         createdTripIds.push(trip.id);
 
         console.log(`🚗 Trip 생성 완료: ${trip.id} (${group.direction}, ${group.requests.length}명)`);
+
+        // ✅ Proposal 생성 및 SMS 발송
+        await this.createProposalsForTrip(trip, group);
       } catch (error) {
         console.error('Trip 생성 실패:', error);
       }
     }
 
     return createdTripIds;
+  }
+
+  /**
+   * Trip에 대한 Proposal 생성 및 알림 발송
+   */
+  private async createProposalsForTrip(trip: any, group: MatchGroup): Promise<void> {
+    try {
+      for (const request of group.requests) {
+        // Proposal 생성
+        const proposal = await prisma.proposal.create({
+          data: {
+            requestId: request.id,
+            status: 'ACTIVE',
+            // 가는 편 정보
+            outboundTripId: group.direction === 'OUTBOUND' ? trip.id : null,
+            pickupTime: group.direction === 'OUTBOUND' ? trip.startTime : request.desiredPickupTime,
+            dropoffTime: group.direction === 'OUTBOUND' ? trip.endTime : request.desiredPickupTime,
+            // 귀가 편 정보
+            returnTripId: group.direction === 'RETURN' ? trip.id : null,
+            returnPickupTime: group.direction === 'RETURN' ? trip.startTime : request.desiredReturnTime,
+            returnDropoffTime: group.direction === 'RETURN' ? trip.endTime : request.desiredReturnTime,
+            // 가격 (임시)
+            estimatedPrice: 15000,
+            // 유효기간 (15분)
+            expiresAt: addMinutes(new Date(), 15),
+          },
+        });
+
+        // RideRequest 상태 업데이트
+        await prisma.rideRequest.update({
+          where: { id: request.id },
+          data: { status: 'PROPOSED' },
+        });
+
+        console.log(`💌 Proposal 생성: ${proposal.id} (Request: ${request.id})`);
+
+        // SMS 알림 발송
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: request.customerId },
+          });
+
+          if (user && user.phone) {
+            const pickupTimeStr = format(
+              group.direction === 'OUTBOUND' ? trip.startTime : request.desiredReturnTime,
+              'MM월 dd일 HH:mm'
+            );
+            await smsService.sendProposalNotification(
+              user.phone,
+              user.name,
+              pickupTimeStr,
+              15000
+            );
+            console.log(`📱 SMS 발송 완료: ${user.phone}`);
+          }
+        } catch (smsError) {
+          console.error('SMS 발송 실패:', smsError);
+          // SMS 실패해도 계속 진행
+        }
+      }
+    } catch (error) {
+      console.error('Proposal 생성 실패:', error);
+    }
   }
 
   /**
