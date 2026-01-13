@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
-  timeout: 10000,
+  timeout: 60000, // 60초 (Render 무료 플랜 서버 깨우기 시간 고려)
   headers: {
     'Content-Type': 'application/json',
   },

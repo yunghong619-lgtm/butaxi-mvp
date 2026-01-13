@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import LocationMapModal from './LocationMapModal';
 
 interface AddressSearchProps {
   value: string;
@@ -62,6 +63,8 @@ export default function AddressSearch({
   label,
 }: AddressSearchProps) {
   const [internalValue, setInternalValue] = useState(value);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   useEffect(() => {
     setInternalValue(value);
@@ -113,6 +116,45 @@ export default function AddressSearch({
       e.preventDefault();
       handleManualSubmit();
     }
+  };
+
+  // 현위치 버튼 핸들러
+  const handleCurrentLocation = () => {
+    setIsLoadingLocation(true);
+
+    if (!navigator.geolocation) {
+      alert('브라우저에서 위치 정보를 지원하지 않습니다.');
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        // LocationMapModal 열기 (현재 위치로)
+        setIsMapModalOpen(true);
+        setIsLoadingLocation(false);
+      },
+      (error) => {
+        console.error('위치 정보 가져오기 실패:', error);
+        alert('위치 정보를 가져올 수 없습니다.\n브라우저 설정에서 위치 권한을 허용해주세요.');
+        setIsLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  // LocationMapModal에서 위치 선택 완료
+  const handleMapSelectLocation = (address: string, lat: number, lng: number) => {
+    setInternalValue(address);
+    onChange(address, lat, lng);
+    setIsMapModalOpen(false);
   };
 
   return (
@@ -168,12 +210,45 @@ export default function AddressSearch({
         >
           🔍 주소 찾기
         </button>
+
+        {/* 현위치 버튼 */}
+        <button
+          type="button"
+          onClick={handleCurrentLocation}
+          disabled={isLoadingLocation}
+          className="px-6 py-4 bg-white border-2 border-black text-black rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          title="현재 위치로 지도에서 선택"
+        >
+          {isLoadingLocation ? (
+            <>
+              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span>로딩중...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>현위치</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* 도움말 */}
       <p className="text-xs text-gray-500 px-1">
-        💡 주소 찾기 버튼을 클릭하거나, 직접 입력 후 Enter를 눌러주세요
+        💡 주소 찾기 버튼을 클릭하거나, 현위치 버튼으로 지도에서 선택하거나, 직접 입력 후 Enter를 눌러주세요
       </p>
+
+      {/* LocationMapModal */}
+      <LocationMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelectLocation={handleMapSelectLocation}
+        initialLat={37.5665}
+        initialLng={126.9780}
+      />
     </div>
   );
 }
