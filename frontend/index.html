@@ -4,8 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RETURN - 공유 택시 예약 서비스</title>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5632e1df143603472a27798a1708b50a&libraries=services"></script>
+    <title>BUTAXI - 스마트 공유 택시</title>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=5632e1df143603472a27798a1708b50a&libraries=services&autoload=false"></script>
+    <script>
+      // Kakao Maps SDK 명시적 로드
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(function() {
+          console.log('Kakao Maps SDK loaded successfully');
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

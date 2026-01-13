@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import Logo from './Logo';
 
 export default function Layout() {
   const location = useLocation();
@@ -8,23 +9,22 @@ export default function Layout() {
   const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-primary-600">🚖 RETURN</h1>
-              <span className="text-sm text-gray-500">공유 택시 예약 서비스</span>
-            </div>
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <Logo variant="full" size="md" />
+            </Link>
 
             {/* Navigation */}
-            <nav className="flex space-x-4">
+            <nav className="flex gap-2">
               <Link
                 to="/customer"
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
                   isCustomer
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -32,19 +32,19 @@ export default function Layout() {
               </Link>
               <Link
                 to="/driver"
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
                   isDriver
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                기사
+                드라이버
               </Link>
               <Link
                 to="/admin"
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
                   isAdmin
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -56,15 +56,15 @@ export default function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main>
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
-          <p>© 2026 RETURN. 함께 가는 즐거운 여정 🚖</p>
-          <p className="mt-2">MVP Version 1.0.0</p>
+      <footer className="border-t border-gray-100 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <p className="text-gray-500 text-sm mb-1">© 2026 BUTAXI. Share your ride</p>
+          <p className="text-gray-400 text-xs">MVP Version 1.0.0</p>
         </div>
       </footer>
     </div>

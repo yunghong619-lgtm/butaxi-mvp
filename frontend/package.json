@@ -1,7 +1,7 @@
 {
-  "name": "return-frontend",
+  "name": "butaxi-frontend",
   "version": "1.0.0",
-  "description": "RETURN 공유 택시 예약 서비스 프론트엔드",
+  "description": "BUTAXI 스마트 공유 택시 서비스 프론트엔드",
   "type": "module",
   "scripts": {
     "dev": "vite",

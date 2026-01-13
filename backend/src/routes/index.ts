@@ -28,6 +28,7 @@ router.get('/trips/driver/:driverId', tripController.getDriverTrips.bind(tripCon
 router.get('/trips/:tripId', tripController.getTripDetail.bind(tripController));
 router.patch('/trips/:tripId/status', tripController.updateTripStatus.bind(tripController));
 router.post('/trips/stops/:stopId/checkin', tripController.checkInStop.bind(tripController));
+router.patch('/trips/:tripId/location', tripController.updateDriverLocation.bind(tripController));
 
 // ========== Health Check ==========
 router.get('/health', (req, res) => {

@@ -1,7 +1,7 @@
 {
-  "name": "return-backend",
+  "name": "butaxi-backend",
   "version": "1.0.0",
-  "description": "RETURN 공유 택시 예약 서비스 백엔드",
+  "description": "BUTAXI 스마트 공유 택시 서비스 백엔드",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

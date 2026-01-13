@@ -95,24 +95,41 @@ export default function BookingList() {
 
               {booking.outboundTrip && (
                 <div className="space-y-3 mb-4">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <span className="font-semibold">차량:</span>
-                    <span>{booking.outboundTrip.vehicle.name}</span>
-                    <span className="text-gray-500">
-                      ({booking.outboundTrip.vehicle.licensePlate})
-                    </span>
+                  {/* 차량 정보 */}
+                  <div className="flex items-center space-x-2 text-sm bg-gray-50 rounded-lg p-3">
+                    <span className="text-xl">🚐</span>
+                    <div className="flex-1">
+                      <span className="font-semibold">{booking.outboundTrip.vehicle.name}</span>
+                      <span className="text-gray-500 ml-2">
+                        {booking.outboundTrip.vehicle.licensePlate}
+                      </span>
+                    </div>
                   </div>
 
+                  {/* 기사 정보 */}
+                  {booking.outboundTrip.driver && (
+                    <div className="flex items-center space-x-2 text-sm bg-gray-50 rounded-lg p-3">
+                      <span className="text-xl">👤</span>
+                      <div className="flex-1">
+                        <span className="font-semibold">{booking.outboundTrip.driver.name}</span>
+                        <span className="text-gray-500 ml-2">
+                          {booking.outboundTrip.driver.phone}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 경로 정보 */}
                   {booking.outboundTrip.stops && booking.outboundTrip.stops.length > 0 && (
                     <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                       {booking.outboundTrip.stops.map((stop: any, index: number) => (
                         <div key={stop.id} className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                          <div className="flex-shrink-0 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-xs font-semibold">
                             {index + 1}
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold">
-                              {stop.stopType === 'PICKUP' ? '픽업' : '하차'}
+                              {stop.stopType === 'PICKUP' ? '🔼 픽업' : '🔽 하차'}
                             </p>
                             <p className="text-sm text-gray-600">{stop.address}</p>
                             <p className="text-xs text-gray-500">

@@ -18,7 +18,7 @@ app.use('/api', routes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    service: 'RETURN MVP Backend',
+    service: 'BUTAXI MVP Backend',
     version: '1.0.0',
     status: 'running',
     endpoints: {
@@ -55,7 +55,7 @@ app.listen(PORT, () => {
   console.log('\n');
   console.log('╔═══════════════════════════════════════════╗');
   console.log('║                                           ║');
-  console.log('║      🚖  RETURN Backend Server 🚖        ║');
+  console.log('║      🚐  BUTAXI Backend Server 🚐        ║');
   console.log('║                                           ║');
   console.log('╚═══════════════════════════════════════════╝');
   console.log('');
