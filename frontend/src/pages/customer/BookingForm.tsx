@@ -154,10 +154,14 @@ export default function BookingForm() {
         {step === 1 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                <span className="text-3xl">🚖</span>
-                가는 편
-              </h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold">가는 편</h2>
+              </div>
 
               <div className="space-y-6">
                 <AddressSearch
@@ -179,14 +183,17 @@ export default function BookingForm() {
                 />
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
-                    ⏰ 출발 시간
+                  <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    출발 시간
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.desiredPickupTime}
                     onChange={(e) => setFormData({ ...formData, desiredPickupTime: e.target.value })}
-                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md"
+                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md cursor-pointer"
                   />
                 </div>
               </div>
@@ -206,10 +213,14 @@ export default function BookingForm() {
         {step === 2 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                <span className="text-3xl">🏠</span>
-                귀가 편
-              </h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold">귀가 편</h2>
+              </div>
 
               <div className="space-y-6">
                 <AddressSearch
@@ -231,14 +242,17 @@ export default function BookingForm() {
                 />
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
-                    ⏰ 귀가 시간
+                  <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    귀가 시간
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.desiredReturnTime}
                     onChange={(e) => setFormData({ ...formData, desiredReturnTime: e.target.value })}
-                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md"
+                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md cursor-pointer"
                   />
                 </div>
               </div>
@@ -265,21 +279,26 @@ export default function BookingForm() {
         {/* Step 3: 확인 */}
         {step === 3 && (
           <div className="space-y-6 animate-fadeIn">
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <span className="text-3xl">✅</span>
-              예약 확인
-            </h2>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold">예약 확인</h2>
+            </div>
 
             {/* 가는 편 */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 shadow-lg border-2 border-blue-100">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <span className="text-2xl">🚖</span>
+                <h3 className="text-xl font-bold">
                   가는 편
                 </h3>
-                <span className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-full">
-                  {new Date(formData.desiredPickupTime).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                </span>
+                {formData.desiredPickupTime && (
+                  <span className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                    {new Date(formData.desiredPickupTime).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                  </span>
+                )}
               </div>
 
               {/* 시각적 경로 */}
@@ -294,9 +313,11 @@ export default function BookingForm() {
                   <div className="flex-1 pt-2">
                     <p className="text-xs text-gray-500 mb-1">출발지</p>
                     <p className="font-semibold text-gray-900">{formData.pickupAddress}</p>
-                    <p className="text-sm text-blue-600 mt-1">
-                      {new Date(formData.desiredPickupTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    {formData.desiredPickupTime && (
+                      <p className="text-sm text-blue-600 mt-1">
+                        {new Date(formData.desiredPickupTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -327,13 +348,14 @@ export default function BookingForm() {
             {/* 귀가 편 */}
             <div className="bg-gradient-to-br from-purple-50 to-white rounded-3xl p-8 shadow-lg border-2 border-purple-100">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <span className="text-2xl">🏠</span>
+                <h3 className="text-xl font-bold">
                   귀가 편
                 </h3>
-                <span className="px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
-                  {new Date(formData.desiredReturnTime).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                </span>
+                {formData.desiredReturnTime && (
+                  <span className="px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                    {new Date(formData.desiredReturnTime).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                  </span>
+                )}
               </div>
 
               {/* 시각적 경로 */}
@@ -348,9 +370,11 @@ export default function BookingForm() {
                   <div className="flex-1 pt-2">
                     <p className="text-xs text-gray-500 mb-1">출발지</p>
                     <p className="font-semibold text-gray-900">{formData.returnAddress}</p>
-                    <p className="text-sm text-purple-600 mt-1">
-                      {new Date(formData.desiredReturnTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    {formData.desiredReturnTime && (
+                      <p className="text-sm text-purple-600 mt-1">
+                        {new Date(formData.desiredReturnTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -380,10 +404,14 @@ export default function BookingForm() {
 
             {/* 추가 정보 */}
             <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
-              <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <span className="text-2xl">👥</span>
-                추가 정보
-              </h3>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold">추가 정보</h3>
+              </div>
 
               <div className="space-y-6">
                 <div>

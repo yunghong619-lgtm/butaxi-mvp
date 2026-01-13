@@ -3,117 +3,108 @@ import Logo from '../components/Logo';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
-      <div className="max-w-5xl w-full">
-        {/* Hero Section */}
-        <div className="text-center mb-20">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full">
+        {/* Logo & Title */}
+        <div className="text-center mb-16">
           <div className="flex justify-center mb-8">
             <Logo variant="full" size="xl" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-black">
             Smart Share Ride
           </h1>
-          <p className="text-gray-500 text-xl md:text-2xl font-light">
+          <p className="text-gray-500 text-lg md:text-xl">
             버스처럼 효율적으로, 택시처럼 편리하게
           </p>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-16">
-          {/* Customer Card */}
+        {/* Role Selection */}
+        <div className="space-y-4 mb-12">
+          {/* Customer */}
           <Link
             to="/customer"
-            className="group relative bg-black text-white p-10 rounded-3xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+            className="group block bg-black text-white p-8 rounded-2xl hover:bg-gray-900 transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold">고객</h2>
-                <div className="text-4xl group-hover:translate-x-2 transition-transform duration-300">→</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">고객</h2>
+                <p className="text-gray-300">예약하고 함께 이동하세요</p>
               </div>
-              <p className="text-gray-300 text-lg mb-8">
-                예약하고 함께 이동하세요
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-gray-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  <span>간편한 예약 신청</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  <span>실시간 위치 추적</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                  <span>합리적인 비용</span>
-                </div>
+              <div className="text-3xl group-hover:translate-x-2 transition-transform duration-300">
+                →
               </div>
             </div>
           </Link>
 
-          {/* Driver Card */}
+          {/* Driver */}
           <Link
             to="/driver"
-            className="group relative bg-white border-2 border-gray-200 text-black p-10 rounded-3xl hover:border-black hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+            className="group block border-2 border-gray-200 bg-white text-black p-8 rounded-2xl hover:border-black transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold">드라이버</h2>
-                <div className="text-4xl group-hover:translate-x-2 transition-transform duration-300">→</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">드라이버</h2>
+                <p className="text-gray-600">효율적으로 운행을 관리하세요</p>
               </div>
-              <p className="text-gray-600 text-lg mb-8">
-                효율적으로 운행을 관리하세요
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-black" />
-                  <span>최적화된 경로</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-black" />
-                  <span>실시간 위치 공유</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="w-1.5 h-1.5 rounded-full bg-black" />
-                  <span>정거장 관리</span>
-                </div>
+              <div className="text-3xl group-hover:translate-x-2 transition-transform duration-300">
+                →
+              </div>
+            </div>
+          </Link>
+
+          {/* Admin */}
+          <Link
+            to="/admin"
+            className="group block border border-gray-200 bg-gray-50 text-gray-700 p-6 rounded-2xl hover:bg-gray-100 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold mb-1">관리자</h3>
+                <p className="text-sm text-gray-500">시스템 관리 및 모니터링</p>
+              </div>
+              <div className="text-2xl group-hover:translate-x-2 transition-transform duration-300">
+                →
               </div>
             </div>
           </Link>
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16 px-4">
+        <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-100">
           <div className="text-center">
-            <div className="text-4xl mb-4">⚡</div>
-            <h3 className="font-semibold text-lg mb-2">빠른 매칭</h3>
-            <p className="text-gray-500 text-sm">AI 기반 최적 경로 매칭</p>
+            <div className="w-12 h-12 mx-auto mb-3 bg-black rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm mb-1">빠른 매칭</h3>
+            <p className="text-xs text-gray-500">최적 경로 자동 매칭</p>
           </div>
           <div className="text-center">
-            <div className="text-4xl mb-4">💰</div>
-            <h3 className="font-semibold text-lg mb-2">합리적인 가격</h3>
-            <p className="text-gray-500 text-sm">택시 대비 최대 50% 절감</p>
+            <div className="w-12 h-12 mx-auto mb-3 bg-black rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm mb-1">합리적 가격</h3>
+            <p className="text-xs text-gray-500">최대 50% 절감</p>
           </div>
           <div className="text-center">
-            <div className="text-4xl mb-4">🌟</div>
-            <h3 className="font-semibold text-lg mb-2">안전한 이동</h3>
-            <p className="text-gray-500 text-sm">실시간 위치 추적 시스템</p>
+            <div className="w-12 h-12 mx-auto mb-3 bg-black rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-sm mb-1">안전한 이동</h3>
+            <p className="text-xs text-gray-500">실시간 위치 추적</p>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center text-sm">
-          <p className="text-gray-400 mb-4">
-            💡 테스트용: 브라우저 창 2개로 고객/드라이버 동시 체험
+        {/* Test Info */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-gray-400">
+            💡 테스트: 브라우저 창 2개로 고객/드라이버 동시 체험 가능
           </p>
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-black transition-colors"
-          >
-            <span>관리자 페이지</span>
-            <span>→</span>
-          </Link>
         </div>
       </div>
     </div>
