@@ -60,23 +60,25 @@ export default function BookingForm() {
   const canProceedStep2 = formData.returnAddress && formData.homeAddress && formData.desiredReturnTime;
   const canSubmit = canProceedStep1 && canProceedStep2;
 
-  // 지도용 stops 데이터 생성
+  // 지도용 stops 데이터 생성 (TripMap 컴포넌트 타입에 맞게)
   const outboundStops = [
     {
       id: '1',
       address: formData.pickupAddress,
-      lat: formData.pickupLat,
-      lng: formData.pickupLng,
+      latitude: formData.pickupLat,
+      longitude: formData.pickupLng,
       stopType: 'PICKUP',
-      scheduledTime: formData.desiredPickupTime,
+      sequence: 1,
+      actualTime: null,
     },
     {
       id: '2',
       address: formData.dropoffAddress,
-      lat: formData.dropoffLat,
-      lng: formData.dropoffLng,
+      latitude: formData.dropoffLat,
+      longitude: formData.dropoffLng,
       stopType: 'DROPOFF',
-      scheduledTime: formData.desiredPickupTime,
+      sequence: 2,
+      actualTime: null,
     },
   ];
 
@@ -84,18 +86,20 @@ export default function BookingForm() {
     {
       id: '3',
       address: formData.returnAddress,
-      lat: formData.returnLat,
-      lng: formData.returnLng,
+      latitude: formData.returnLat,
+      longitude: formData.returnLng,
       stopType: 'PICKUP',
-      scheduledTime: formData.desiredReturnTime,
+      sequence: 1,
+      actualTime: null,
     },
     {
       id: '4',
       address: formData.homeAddress,
-      lat: formData.homeLat,
-      lng: formData.homeLng,
+      latitude: formData.homeLat,
+      longitude: formData.homeLng,
       stopType: 'DROPOFF',
-      scheduledTime: formData.desiredReturnTime,
+      sequence: 2,
+      actualTime: null,
     },
   ];
 
