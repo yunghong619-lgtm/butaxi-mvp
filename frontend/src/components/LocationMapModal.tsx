@@ -44,9 +44,7 @@ export default function LocationMapModal({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const NAVER_CLIENT_ID = import.meta.env.VITE_NAVER_CLIENT_ID || 'zvr1hrw8n4';
-
-  // 주소 검색 (Naver Geocoding API)
+  // 주소 검색 (Naver Geocoding API - Backend를 통해 처리)
   const searchAddress = async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSearchResults([]);
