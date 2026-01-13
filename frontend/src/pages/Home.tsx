@@ -23,14 +23,14 @@ export default function Home() {
           {/* Customer */}
           <Link
             to="/customer"
-            className="group block bg-black text-white p-8 rounded-2xl hover:bg-gray-900 transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
+            className="group block bg-black text-white p-6 md:p-8 rounded-2xl hover:bg-gray-900 transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">고객</h2>
-                <p className="text-gray-300">예약하고 함께 이동하세요</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2 whitespace-nowrap">고객</h2>
+                <p className="text-sm md:text-base text-gray-300">예약하고 함께 이동하세요</p>
               </div>
-              <div className="text-3xl group-hover:translate-x-2 transition-transform duration-300">
+              <div className="text-2xl md:text-3xl flex-shrink-0 group-hover:translate-x-2 transition-transform duration-300">
                 →
               </div>
             </div>
@@ -39,14 +39,14 @@ export default function Home() {
           {/* Driver */}
           <Link
             to="/driver"
-            className="group block border-2 border-gray-200 bg-white text-black p-8 rounded-2xl hover:border-black transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
+            className="group block border-2 border-gray-200 bg-white text-black p-6 md:p-8 rounded-2xl hover:border-black transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">드라이버</h2>
-                <p className="text-gray-600">효율적으로 운행을 관리하세요</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl md:text-2xl font-bold mb-1 md:mb-2 whitespace-nowrap">드라이버</h2>
+                <p className="text-sm md:text-base text-gray-600">효율적으로 운행을 관리하세요</p>
               </div>
-              <div className="text-3xl group-hover:translate-x-2 transition-transform duration-300">
+              <div className="text-2xl md:text-3xl flex-shrink-0 group-hover:translate-x-2 transition-transform duration-300">
                 →
               </div>
             </div>
@@ -55,14 +55,14 @@ export default function Home() {
           {/* Admin */}
           <Link
             to="/admin"
-            className="group block border border-gray-200 bg-gray-50 text-gray-700 p-6 rounded-2xl hover:bg-gray-100 transition-all duration-300"
+            className="group block border border-gray-200 bg-gray-50 text-gray-700 p-5 md:p-6 rounded-2xl hover:bg-gray-100 transition-all duration-300"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-1">관리자</h3>
-                <p className="text-sm text-gray-500">시스템 관리 및 모니터링</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base md:text-lg font-semibold mb-1 whitespace-nowrap">관리자</h3>
+                <p className="text-xs md:text-sm text-gray-500">시스템 관리 및 모니터링</p>
               </div>
-              <div className="text-2xl group-hover:translate-x-2 transition-transform duration-300">
+              <div className="text-xl md:text-2xl flex-shrink-0 group-hover:translate-x-2 transition-transform duration-300">
                 →
               </div>
             </div>

@@ -172,48 +172,49 @@ export default function AddressSearch({
         </label>
       )}
       
-      <div className="flex gap-2">
-        {/* 주소 입력 필드 */}
-        <div className="flex-1 relative group">
-          <input
-            type="text"
-            value={internalValue}
-            onChange={(e) => handleManualChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="w-full px-5 py-4 pr-12 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md"
-          />
-          
-          {/* Clear 버튼 */}
-          {internalValue && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-              title="지우기"
+      {/* 주소 입력 필드 */}
+      <div className="w-full relative group mb-3">
+        <input
+          type="text"
+          value={internalValue}
+          onChange={(e) => handleManualChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="w-full px-4 md:px-5 py-3 md:py-4 pr-10 md:pr-12 text-sm md:text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md"
+        />
+        
+        {/* Clear 버튼 */}
+        {internalValue && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            title="지우기"
+          >
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              className="w-4 h-4 md:w-5 md:h-5"
             >
-              <svg
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
 
+      {/* 버튼들 */}
+      <div className="flex gap-2">
         {/* 주소 찾기 버튼 */}
         <button
           type="button"
           onClick={handleSearchAddress}
-          className="px-6 py-4 bg-black text-white rounded-2xl font-semibold hover:bg-gray-900 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
+          className="flex-1 px-4 md:px-6 py-3 md:py-4 bg-black text-white rounded-2xl text-sm md:text-base font-semibold hover:bg-gray-900 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
         >
           🔍 주소 찾기
         </button>
@@ -223,17 +224,17 @@ export default function AddressSearch({
           type="button"
           onClick={handleCurrentLocation}
           disabled={isLoadingLocation}
-          className="px-6 py-4 bg-white border-2 border-black text-black rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="flex-1 px-3 md:px-6 py-3 md:py-4 bg-white border-2 border-black text-black rounded-2xl text-sm md:text-base font-semibold hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           title="현재 위치로 지도에서 선택"
         >
           {isLoadingLocation ? (
             <>
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              <span>로딩중...</span>
+              <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="hidden md:inline">로딩중...</span>
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>

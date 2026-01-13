@@ -11,18 +11,26 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="border-b border-gray-100 bg-white sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="hover:opacity-80 transition-opacity">
+            <Link to="/" className="hover:opacity-80 transition-opacity flex items-center gap-2">
               <Logo variant="full" size="md" />
             </Link>
 
             {/* Navigation */}
-            <nav className="flex gap-2">
+            <nav className="flex gap-1.5 md:gap-2">
+              <Link
+                to="/"
+                className="px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium text-sm md:text-base transition-all bg-gray-100 hover:bg-gray-200 text-gray-700 whitespace-nowrap"
+                title="홈으로"
+              >
+                <span className="hidden md:inline">🏠 홈</span>
+                <span className="md:hidden">🏠</span>
+              </Link>
               <Link
                 to="/customer"
-                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-medium text-sm md:text-base transition-all whitespace-nowrap ${
                   isCustomer
                     ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -32,7 +40,7 @@ export default function Layout() {
               </Link>
               <Link
                 to="/driver"
-                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-medium text-sm md:text-base transition-all whitespace-nowrap ${
                   isDriver
                     ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -42,7 +50,7 @@ export default function Layout() {
               </Link>
               <Link
                 to="/admin"
-                className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
+                className={`px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-medium text-sm md:text-base transition-all whitespace-nowrap ${
                   isAdmin
                     ? 'bg-black text-white'
                     : 'text-gray-600 hover:bg-gray-100'
