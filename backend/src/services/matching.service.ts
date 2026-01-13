@@ -149,10 +149,9 @@ export class MatchingService {
           // Vehicle 자동 생성
           vehicle = await prisma.vehicle.create({
             data: {
+              name: `자동배정차량-${Date.now().toString().slice(-4)}`,
               licensePlate: `AUTO-${Date.now().toString().slice(-4)}`,
-              model: '자동 배정 차량 (9인승)',
               capacity: 4,
-              driverId: driver.id,
               isActive: true,
             },
           });

@@ -12,7 +12,7 @@ export class SMSService {
   private initialize() {
     const apiKey = process.env.SOLAPI_API_KEY;
     const apiSecret = process.env.SOLAPI_API_SECRET;
-    this.from = process.env.SOLAPI_FROM || '';
+    this.from = process.env.SOLAPI_SENDER_PHONE || process.env.SOLAPI_FROM || '010-4922-0573';
 
     if (apiKey && apiSecret) {
       try {

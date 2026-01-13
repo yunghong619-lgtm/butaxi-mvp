@@ -34,7 +34,7 @@ export class RideController {
           data: {
             id: customerId,
             name: `고객${customerId.slice(0, 8)}`,
-            phone: '010-0000-0000',
+            phone: '010-4922-0573', // 테스트용 실제 번호
             role: 'CUSTOMER',
             email: `${customerId}@butaxi.com`,
           },
