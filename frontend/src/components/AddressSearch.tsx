@@ -1,13 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-interface AddressResult {
-  address_name: string;
-  road_address_name?: string;
-  place_name?: string;
-  x: string;
-  y: string;
-}
+import { useState, useEffect } from 'react';
 
 interface AddressSearchProps {
   value: string;
@@ -16,180 +7,172 @@ interface AddressSearchProps {
   label?: string;
 }
 
+// 주소 문자열에서 더미 좌표 생성 (서울 지역 기준)
+const generateDummyCoordinates = (address: string): { lat: number; lng: number } => {
+  // 주소 문자열을 해시하여 시드값 생성
+  let hash = 0;
+  for (let i = 0; i < address.length; i++) {
+    hash = ((hash << 5) - hash) + address.charCodeAt(i);
+    hash = hash & hash; // 32비트 정수로 변환
+  }
+  
+  // 서울 중심부 기준 (37.5665, 126.978)
+  // ±0.05도 범위 내에서 랜덤 좌표 생성 (약 5km 반경)
+  const centerLat = 37.5665;
+  const centerLng = 126.978;
+  
+  // 해시값을 0~1 범위로 정규화
+  const seed1 = Math.abs(hash % 10000) / 10000;
+  const seed2 = Math.abs((hash >> 16) % 10000) / 10000;
+  
+  const lat = centerLat + (seed1 - 0.5) * 0.1; // ±0.05도
+  const lng = centerLng + (seed2 - 0.5) * 0.1; // ±0.05도
+  
+  return { lat, lng };
+};
+
+// Daum Postcode 타입 정의
+declare global {
+  interface Window {
+    daum: {
+      Postcode: new (options: {
+        oncomplete: (data: {
+          address: string;
+          roadAddress: string;
+          jibunAddress: string;
+          zonecode: string;
+          addressType: string;
+          bname: string;
+          buildingName: string;
+        }) => void;
+        width?: string;
+        height?: string;
+      }) => {
+        open: () => void;
+        embed: (element: HTMLElement) => void;
+      };
+    };
+  }
+}
+
 export default function AddressSearch({
   value,
   onChange,
-  placeholder = '주소를 검색하세요 (예: 서울시 강남구 역삼동)',
+  placeholder = '주소 찾기 버튼을 눌러주세요',
   label,
 }: AddressSearchProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<AddressResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [internalValue, setInternalValue] = useState(value);
 
-  const KAKAO_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY || '03e6693a8b25414be33cea9e8e88b3cf';
+  useEffect(() => {
+    setInternalValue(value);
+  }, [value]);
 
-  const searchAddress = async (query: string) => {
-    if (!query.trim() || query.length < 2) {
-      setResults([]);
+  const handleSearchAddress = () => {
+    if (!window.daum || !window.daum.Postcode) {
+      alert('주소 검색 서비스를 불러올 수 없습니다. 페이지를 새로고침해주세요.');
       return;
     }
 
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        'https://dapi.kakao.com/v2/local/search/address.json',
-        {
-          params: { query },
-          headers: {
-            Authorization: `KakaoAK ${KAKAO_API_KEY}`,
-          },
-        }
-      );
-      
-      const keywordResponse = await axios.get(
-        'https://dapi.kakao.com/v2/local/search/keyword.json',
-        {
-          params: { query },
-          headers: {
-            Authorization: `KakaoAK ${KAKAO_API_KEY}`,
-          },
-        }
-      );
+    new window.daum.Postcode({
+      oncomplete: function(data) {
+        // 도로명 주소가 있으면 도로명, 없으면 지번 주소
+        const fullAddress = data.roadAddress || data.jibunAddress;
+        const extraAddress = data.buildingName ? ` (${data.buildingName})` : '';
+        const finalAddress = fullAddress + extraAddress;
+        
+        // 더미 좌표 생성
+        const { lat, lng } = generateDummyCoordinates(fullAddress);
+        
+        setInternalValue(finalAddress);
+        onChange(finalAddress, lat, lng);
+      },
+      width: '100%',
+      height: '100%',
+    }).open();
+  };
 
-      const addressResults = response.data.documents || [];
-      const keywordResults = keywordResponse.data.documents || [];
-      
-      setResults([...addressResults, ...keywordResults].slice(0, 10));
-    } catch (error) {
-      console.error('주소 검색 실패:', error);
-      // 검색 실패 시에도 수동 입력 가능하도록
-      setResults([]);
-    } finally {
-      setLoading(false);
+  const handleClear = () => {
+    setInternalValue('');
+    onChange('', 0, 0);
+  };
+
+  const handleManualChange = (newValue: string) => {
+    setInternalValue(newValue);
+    // 수동 입력 시에는 onChange를 즉시 호출하지 않음
+  };
+
+  const handleManualSubmit = () => {
+    if (internalValue.trim()) {
+      const { lat, lng } = generateDummyCoordinates(internalValue);
+      onChange(internalValue, lat, lng);
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery) {
-        searchAddress(searchQuery);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const handleSelectAddress = (result: AddressResult) => {
-    const addressName = result.place_name || result.road_address_name || result.address_name;
-    const lat = parseFloat(result.y);
-    const lng = parseFloat(result.x);
-    
-    onChange(addressName, lat, lng);
-    setSearchQuery(addressName);
-    setIsOpen(false);
-  };
-
-  // 수동 입력 시 Enter 키로 확정
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery && results.length === 0) {
-      // 검색 결과가 없을 때 수동 입력으로 처리 (기본 좌표: 서울시청)
-      onChange(searchQuery, 37.5665, 126.978);
-      setIsOpen(false);
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleManualSubmit();
     }
   };
 
   return (
-    <div className="relative">
+    <div className="space-y-2">
       {label && (
         <label className="block text-sm font-semibold text-gray-900 mb-3">
           {label}
         </label>
       )}
       
-      <div className="relative group">
-        <input
-          ref={inputRef}
-          type="text"
-          value={value || searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md"
-        />
-
-        <svg
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </div>
-
-      {isOpen && (searchQuery || results.length > 0) && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
+      <div className="flex gap-2">
+        {/* 주소 입력 필드 */}
+        <div className="flex-1 relative group">
+          <input
+            type="text"
+            value={internalValue}
+            onChange={(e) => handleManualChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="w-full px-5 py-4 pr-12 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md"
           />
           
-          <div className="absolute z-20 w-full mt-3 bg-white border border-gray-200 rounded-2xl shadow-2xl max-h-80 overflow-y-auto">
-            {loading ? (
-              <div className="p-4 text-center text-gray-500">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-black mb-2"></div>
-                <p className="text-sm">검색 중...</p>
-              </div>
-            ) : results.length > 0 ? (
-              <div className="divide-y divide-gray-100">
-                {results.map((result, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleSelectAddress(result)}
-                    className="w-full px-5 py-4 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="font-medium text-gray-900 mb-1">
-                      {result.place_name || result.road_address_name || result.address_name}
-                    </div>
-                    {result.place_name && (result.road_address_name || result.address_name) && (
-                      <div className="text-sm text-gray-500">
-                        {result.road_address_name || result.address_name}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ) : searchQuery.length >= 2 ? (
-              <div className="p-4 text-center text-gray-500 text-sm">
-                <p className="mb-2">검색 결과가 없습니다</p>
-                <p className="text-xs text-gray-400">
-                  💡 Enter 키를 누르면 직접 입력한 주소로 진행됩니다
-                </p>
-              </div>
-            ) : (
-              <div className="p-4 text-center text-gray-500 text-sm">
-                2자 이상 입력해주세요
-              </div>
-            )}
-          </div>
-        </>
-      )}
+          {/* Clear 버튼 */}
+          {internalValue && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              title="지우기"
+            >
+              <svg
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
 
-      {/* 도움말 텍스트 */}
-      <p className="mt-2 text-xs text-gray-500">
-        💡 주소를 검색하거나 직접 입력 후 Enter를 눌러주세요
+        {/* 주소 찾기 버튼 */}
+        <button
+          type="button"
+          onClick={handleSearchAddress}
+          className="px-6 py-4 bg-black text-white rounded-2xl font-semibold hover:bg-gray-900 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
+        >
+          🔍 주소 찾기
+        </button>
+      </div>
+
+      {/* 도움말 */}
+      <p className="text-xs text-gray-500 px-1">
+        💡 주소 찾기 버튼을 클릭하거나, 직접 입력 후 Enter를 눌러주세요
       </p>
     </div>
   );
