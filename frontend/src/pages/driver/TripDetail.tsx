@@ -48,16 +48,6 @@ export default function TripDetail() {
     }
   };
 
-  const handleCheckIn = async (stopId: string) => {
-    try {
-      await tripApi.checkInStop(stopId);
-      alert('체크인 완료!');
-      loadTripDetail();
-    } catch (error) {
-      alert('체크인 실패');
-    }
-  };
-
   const handleUpdateLocation = async () => {
     if (!latitude || !longitude) {
       alert('위치 정보를 가져올 수 없습니다.');
