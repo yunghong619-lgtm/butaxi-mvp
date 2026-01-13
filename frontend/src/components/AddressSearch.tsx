@@ -65,6 +65,10 @@ export default function AddressSearch({
   const [internalValue, setInternalValue] = useState(value);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number }>({
+    lat: 37.5665,
+    lng: 126.9780,
+  });
 
   useEffect(() => {
     setInternalValue(value);
@@ -132,6 +136,9 @@ export default function AddressSearch({
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
+        
+        // 현재 위치 저장
+        setCurrentLocation({ lat, lng });
         
         // LocationMapModal 열기 (현재 위치로)
         setIsMapModalOpen(true);
@@ -246,8 +253,8 @@ export default function AddressSearch({
         isOpen={isMapModalOpen}
         onClose={() => setIsMapModalOpen(false)}
         onSelectLocation={handleMapSelectLocation}
-        initialLat={37.5665}
-        initialLng={126.9780}
+        initialLat={currentLocation.lat}
+        initialLng={currentLocation.lng}
       />
     </div>
   );
