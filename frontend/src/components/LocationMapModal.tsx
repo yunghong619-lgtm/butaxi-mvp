@@ -10,16 +10,15 @@ interface LocationMapModalProps {
 }
 
 interface SearchResult {
-  address_name: string;
-  road_address_name?: string;
-  place_name?: string;
-  x: string;
-  y: string;
+  roadAddress: string;
+  jibunAddress: string;
+  x: string; // longitude
+  y: string; // latitude
 }
 
 declare global {
   interface Window {
-    kakao: any;
+    naver: any;
   }
 }
 
@@ -31,7 +30,6 @@ export default function LocationMapModal({
   initialLng = 126.9780,
 }: LocationMapModalProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [selectedAddress, setSelectedAddress] = useState('위치를 가져오는 중...');
@@ -46,39 +44,9 @@ export default function LocationMapModal({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const KAKAO_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY || '03e6693a8b25414be33cea9e8e88b3cf';
+  const NAVER_CLIENT_ID = import.meta.env.VITE_NAVER_CLIENT_ID || 'zvr1hrw8n4';
 
-  // 지도 중심 이동 함수
-  const moveMapToLocation = (lat: number, lng: number, updateAddress: boolean = true) => {
-    if (!map || !marker || !window.kakao) return;
-
-    const kakao = window.kakao;
-    const newPosition = new kakao.maps.LatLng(lat, lng);
-    
-    // 지도 중심 이동
-    map.setCenter(newPosition);
-    // 마커 이동
-    marker.setPosition(newPosition);
-
-    // 주소 업데이트
-    if (updateAddress) {
-      setSelectedLat(lat);
-      setSelectedLng(lng);
-      setSelectedAddress('주소를 가져오는 중...');
-
-      const geocoder = new kakao.maps.services.Geocoder();
-      geocoder.coord2Address(lng, lat, (result: any, status: any) => {
-        if (status === kakao.maps.services.Status.OK) {
-          const address = result[0].road_address?.address_name || result[0].address.address_name;
-          setSelectedAddress(address);
-        } else {
-          setSelectedAddress('선택된 위치');
-        }
-      });
-    }
-  };
-
-  // 주소 검색
+  // 주소 검색 (Naver Geocoding API)
   const searchAddress = async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSearchResults([]);
@@ -87,28 +55,17 @@ export default function LocationMapModal({
 
     setSearchLoading(true);
     try {
-      // 주소 검색
-      const addressResponse = await axios.get(
-        'https://dapi.kakao.com/v2/local/search/address.json',
-        {
-          params: { query },
-          headers: { Authorization: `KakaoAK ${KAKAO_API_KEY}` },
-        }
-      );
+      // Backend를 통해 검색 (CORS 우회)
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.post(`${API_URL}/api/geocode/search`, {
+        query,
+      });
 
-      // 키워드 검색 (건물명, 장소명 등)
-      const keywordResponse = await axios.get(
-        'https://dapi.kakao.com/v2/local/search/keyword.json',
-        {
-          params: { query },
-          headers: { Authorization: `KakaoAK ${KAKAO_API_KEY}` },
-        }
-      );
-
-      const addressResults = addressResponse.data.documents || [];
-      const keywordResults = keywordResponse.data.documents || [];
-
-      setSearchResults([...addressResults, ...keywordResults].slice(0, 10));
+      if (response.data.success && response.data.data) {
+        setSearchResults(response.data.data);
+      } else {
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error('주소 검색 실패:', error);
       setSearchResults([]);
@@ -132,7 +89,7 @@ export default function LocationMapModal({
   const handleSelectSearchResult = (result: SearchResult) => {
     const lat = parseFloat(result.y);
     const lng = parseFloat(result.x);
-    const address = result.place_name || result.road_address_name || result.address_name;
+    const address = result.roadAddress || result.jibunAddress;
 
     setSelectedAddress(address);
     setSelectedLat(lat);
@@ -142,16 +99,40 @@ export default function LocationMapModal({
     setShowSearchResults(false);
 
     // 지도 이동
-    moveMapToLocation(lat, lng, false);
+    if (map && marker) {
+      const newPosition = new window.naver.maps.LatLng(lat, lng);
+      map.setCenter(newPosition);
+      marker.setPosition(newPosition);
+    }
+  };
+
+  // Reverse Geocoding (좌표 → 주소)
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.post(`${API_URL}/api/geocode/reverse`, {
+        latitude: lat,
+        longitude: lng,
+      });
+
+      if (response.data.success && response.data.data) {
+        setSelectedAddress(response.data.data);
+      } else {
+        setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+      }
+    } catch (error) {
+      console.error('Reverse Geocoding 실패:', error);
+      setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+    }
   };
 
   useEffect(() => {
     if (!isOpen) return;
 
     const initializeMap = () => {
-      if (!window.kakao || !window.kakao.maps) {
-        console.error('❌ Kakao Maps SDK가 로드되지 않았습니다.');
-        setError('지도를 로드할 수 없습니다.\n\n카카오 Maps API 할당량이 초과되었거나 네트워크 문제가 있을 수 있습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.');
+      if (!window.naver || !window.naver.maps) {
+        console.error('❌ Naver Maps SDK가 로드되지 않았습니다.');
+        setError('지도를 로드할 수 없습니다.\n\n페이지를 새로고침해주세요.');
         setMapLoading(false);
         return;
       }
@@ -162,70 +143,51 @@ export default function LocationMapModal({
       }
 
       try {
-        window.kakao.maps.load(() => {
-          if (!mapRef.current) return;
+        const naver = window.naver;
+        const container = mapRef.current;
+        const position = new naver.maps.LatLng(initialLat, initialLng);
 
-          const kakao = window.kakao;
-          const container = mapRef.current;
-          const options = {
-            center: new kakao.maps.LatLng(initialLat, initialLng),
-            level: 3,
-          };
+        const mapOptions = {
+          center: position,
+          zoom: 16,
+          zoomControl: true,
+          zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT,
+          },
+        };
 
-          console.log('✅ Kakao Map 초기화 중...', { initialLat, initialLng });
-          const mapInstance = new kakao.maps.Map(container, options);
-          setMap(mapInstance);
-          setMapLoading(false);
+        console.log('✅ Naver Map 초기화 중...', { initialLat, initialLng });
+        const mapInstance = new naver.maps.Map(container, mapOptions);
+        setMap(mapInstance);
+        setMapLoading(false);
 
-          // 마커 생성
-          const markerInstance = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(initialLat, initialLng),
-            map: mapInstance,
-          });
-          setMarker(markerInstance);
-
-          // 지도 클릭 이벤트
-          kakao.maps.event.addListener(mapInstance, 'click', function (mouseEvent: any) {
-            const latlng = mouseEvent.latLng;
-            const lat = latlng.getLat();
-            const lng = latlng.getLng();
-
-            // 마커 위치 변경
-            markerInstance.setPosition(latlng);
-
-            // 좌표로 주소 검색 (Reverse Geocoding)
-            setSelectedAddress('주소를 가져오는 중...');
-            const geocoder = new kakao.maps.services.Geocoder();
-            geocoder.coord2Address(lng, lat, (result: any, status: any) => {
-              if (status === kakao.maps.services.Status.OK) {
-                const address = result[0].road_address?.address_name || result[0].address.address_name;
-                setSelectedAddress(address);
-                setSelectedLat(lat);
-                setSelectedLng(lng);
-              } else {
-                console.warn('⚠️ Reverse Geocoding 실패, API 할당량 초과 가능');
-                setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
-                setSelectedLat(lat);
-                setSelectedLng(lng);
-              }
-            });
-          });
-
-          // 초기 주소 가져오기 (Reverse Geocoding)
-          const geocoder = new kakao.maps.services.Geocoder();
-          geocoder.coord2Address(initialLng, initialLat, (result: any, status: any) => {
-            if (status === kakao.maps.services.Status.OK) {
-              const address = result[0].road_address?.address_name || result[0].address.address_name;
-              setSelectedAddress(address);
-            } else {
-              console.warn('⚠️ 초기 주소 조회 실패, API 할당량 초과 가능');
-              setSelectedAddress('현재 위치 (주소 조회 불가)');
-            }
-          });
+        // 마커 생성
+        const markerInstance = new naver.maps.Marker({
+          position: position,
+          map: mapInstance,
         });
+        setMarker(markerInstance);
+
+        // 지도 클릭 이벤트
+        naver.maps.Event.addListener(mapInstance, 'click', function (e: any) {
+          const lat = e.coord.lat();
+          const lng = e.coord.lng();
+
+          // 마커 위치 변경
+          markerInstance.setPosition(e.coord);
+
+          // 좌표로 주소 검색
+          setSelectedLat(lat);
+          setSelectedLng(lng);
+          setSelectedAddress('주소를 가져오는 중...');
+          reverseGeocode(lat, lng);
+        });
+
+        // 초기 주소 가져오기
+        reverseGeocode(initialLat, initialLng);
       } catch (error) {
         console.error('❌ 지도 초기화 실패:', error);
-        setError('지도 초기화에 실패했습니다.\n\n"주소 찾기" 버튼을 이용해주세요.');
+        setError('지도 초기화에 실패했습니다.\n\n페이지를 새로고침해주세요.');
         setMapLoading(false);
       }
     };
@@ -274,7 +236,6 @@ export default function LocationMapModal({
           <div className="relative">
             <div className="relative">
               <input
-                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
@@ -324,11 +285,11 @@ export default function LocationMapModal({
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                         >
                           <div className="font-medium text-gray-900 text-sm mb-1">
-                            {result.place_name || result.road_address_name || result.address_name}
+                            {result.roadAddress || result.jibunAddress}
                           </div>
-                          {result.place_name && (result.road_address_name || result.address_name) && (
+                          {result.roadAddress && result.jibunAddress && result.roadAddress !== result.jibunAddress && (
                             <div className="text-xs text-gray-500">
-                              {result.road_address_name || result.address_name}
+                              {result.jibunAddress}
                             </div>
                           )}
                         </button>
@@ -374,13 +335,13 @@ export default function LocationMapModal({
                     onClick={onClose}
                     className="w-full px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-900 transition"
                   >
-                    닫고 "주소 찾기" 사용하기
+                    닫기
                   </button>
                   <button
                     onClick={() => window.location.reload()}
                     className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition text-sm"
                   >
-                    페이지 새로고침 (자정 이후 권장)
+                    페이지 새로고침
                   </button>
                 </div>
               </div>

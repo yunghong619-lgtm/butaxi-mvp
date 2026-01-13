@@ -1,7 +1,7 @@
 import { PrismaClient, RideRequest, TripDirection } from '@prisma/client';
 import { addMinutes, subMinutes, isWithinInterval } from 'date-fns';
 import { config } from '../config';
-import { kakaoService } from './kakao.service';
+import { naverService } from './naver.service';
 
 const prisma = new PrismaClient();
 
@@ -75,7 +75,7 @@ export class MatchingService {
         const isTimeMatch = isWithinInterval(rTime, { start: windowStart, end: windowEnd });
 
         // 거리 체크 (반경 5km 이내)
-        const isLocationMatch = kakaoService.isWithinRadius(
+        const isLocationMatch = naverService.isWithinRadius(
           { lat: targetLat, lng: targetLng },
           { lat: rLat, lng: rLng },
           5 // 5km
@@ -84,7 +84,8 @@ export class MatchingService {
         return isTimeMatch && isLocationMatch;
       });
 
-      if (matchingRequests.length > 0) {
+      // ✅ 수정: 최소 2명 이상일 때만 그룹 생성 (합승 필수)
+      if (matchingRequests.length >= 2) {
         // 최대 4명까지만
         const limitedRequests = matchingRequests.slice(0, config.policy.maxPassengersPerTrip);
 
@@ -99,6 +100,10 @@ export class MatchingService {
 
         console.log(
           `✅ 그룹 생성: ${direction} - ${limitedRequests.length}명 (시간: ${targetTime.toLocaleString('ko-KR')})`
+        );
+      } else if (matchingRequests.length === 1) {
+        console.log(
+          `⏳ 매칭 대기 중: ${direction} - ${matchingRequests[0].id} (추가 요청 필요)`
         );
       }
     }

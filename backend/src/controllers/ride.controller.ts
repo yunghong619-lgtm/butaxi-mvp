@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { kakaoService } from '../services/kakao.service';
+import { naverService } from '../services/naver.service';
 import { matchingService } from '../services/matching.service';
 
 const prisma = new PrismaClient();
@@ -59,26 +59,26 @@ export class RideController {
         };
       };
 
-      let pickupLocation = await kakaoService.searchAddress(pickupAddress);
-      let dropoffLocation = await kakaoService.searchAddress(dropoffAddress);
-      let returnLocation = await kakaoService.searchAddress(returnAddress);
-      let homeLocation = await kakaoService.searchAddress(homeAddress);
+      let pickupLocation = await naverService.searchAddress(pickupAddress);
+      let dropoffLocation = await naverService.searchAddress(dropoffAddress);
+      let returnLocation = await naverService.searchAddress(returnAddress);
+      let homeLocation = await naverService.searchAddress(homeAddress);
 
-      // Kakao API 실패 시 더미 좌표 사용
+      // Naver API 실패 시 더미 좌표 사용
       if (!pickupLocation) {
-        console.log('⚠️ Kakao API 실패, 더미 좌표 사용: pickup');
+        console.log('⚠️ Naver API 실패, 더미 좌표 사용: pickup');
         pickupLocation = generateDummyCoordinates(pickupAddress);
       }
       if (!dropoffLocation) {
-        console.log('⚠️ Kakao API 실패, 더미 좌표 사용: dropoff');
+        console.log('⚠️ Naver API 실패, 더미 좌표 사용: dropoff');
         dropoffLocation = generateDummyCoordinates(dropoffAddress);
       }
       if (!returnLocation) {
-        console.log('⚠️ Kakao API 실패, 더미 좌표 사용: return');
+        console.log('⚠️ Naver API 실패, 더미 좌표 사용: return');
         returnLocation = generateDummyCoordinates(returnAddress);
       }
       if (!homeLocation) {
-        console.log('⚠️ Kakao API 실패, 더미 좌표 사용: home');
+        console.log('⚠️ Naver API 실패, 더미 좌표 사용: home');
         homeLocation = generateDummyCoordinates(homeAddress);
       }
 
