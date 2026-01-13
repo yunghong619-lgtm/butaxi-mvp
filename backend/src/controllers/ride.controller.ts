@@ -33,7 +33,7 @@ export class RideController {
           data: {
             id: customerId,
             name: `고객${customerId.slice(0, 6)}`,
-            phoneNumber: '010-0000-0000',
+            phone: '010-0000-0000',
             role: 'CUSTOMER',
             email: `customer${customerId.slice(0, 6)}@butaxi.com`,
           },
