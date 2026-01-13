@@ -32,10 +32,10 @@ export class RideController {
         await prisma.user.create({
           data: {
             id: customerId,
-            name: `고객${customerId.slice(0, 6)}`,
+            name: `고객${customerId.slice(0, 8)}`,
             phone: '010-0000-0000',
             role: 'CUSTOMER',
-            email: `customer${customerId.slice(0, 6)}@butaxi.com`,
+            email: `${customerId}@butaxi.com`,
           },
         });
       }
