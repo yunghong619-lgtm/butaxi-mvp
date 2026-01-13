@@ -120,13 +120,43 @@ export class MatchingService {
     for (const group of groups) {
       try {
         // 차량 배정 (MVP: 첫 번째 활성 차량 사용)
-        const vehicle = await prisma.vehicle.findFirst({
+        let vehicle = await prisma.vehicle.findFirst({
           where: { isActive: true },
         });
 
+        // 차량이 없으면 자동 생성
         if (!vehicle) {
-          console.error('사용 가능한 차량이 없습니다.');
-          continue;
+          console.log('⚠️ 사용 가능한 차량이 없습니다. 자동 생성합니다...');
+          
+          // Driver 자동 생성
+          let driver = await prisma.user.findFirst({
+            where: { role: 'DRIVER' },
+          });
+
+          if (!driver) {
+            driver = await prisma.user.create({
+              data: {
+                id: `driver-auto-${Date.now()}`,
+                name: '자동 배정 기사',
+                email: `driver-auto-${Date.now()}@butaxi.com`,
+                phone: '010-0000-0000',
+                role: 'DRIVER',
+              },
+            });
+            console.log(`👤 Driver 자동 생성: ${driver.id}`);
+          }
+
+          // Vehicle 자동 생성
+          vehicle = await prisma.vehicle.create({
+            data: {
+              licensePlate: `AUTO-${Date.now().toString().slice(-4)}`,
+              model: '자동 배정 차량 (9인승)',
+              capacity: 4,
+              driverId: driver.id,
+              isActive: true,
+            },
+          });
+          console.log(`🚗 Vehicle 자동 생성: ${vehicle.id} (${vehicle.licensePlate})`);
         }
 
         // Stop 순서 최적화 (MVP: 단순 순서)
