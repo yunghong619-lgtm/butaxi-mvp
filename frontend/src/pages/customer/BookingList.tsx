@@ -6,8 +6,12 @@ export default function BookingList() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 테스트용 고객 ID
-  const customerId = 'customer1-id'; // TODO: 실제 로그인 시스템 연동
+  // localStorage에서 customerId 가져오기
+  const getCustomerId = () => {
+    return localStorage.getItem('butaxi_customer_id') || 'customer1-id';
+  };
+  
+  const customerId = getCustomerId();
 
   useEffect(() => {
     loadBookings();

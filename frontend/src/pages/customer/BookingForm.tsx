@@ -29,7 +29,18 @@ export default function BookingForm() {
     specialRequests: '',
   });
 
-  const customerId = 'customer1-id';
+  // localStorage에서 customerId 가져오기 또는 생성
+  const getOrCreateCustomerId = () => {
+    let customerId = localStorage.getItem('butaxi_customer_id');
+    if (!customerId) {
+      customerId = `customer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('butaxi_customer_id', customerId);
+      console.log('🆔 새 고객 ID 생성:', customerId);
+    }
+    return customerId;
+  };
+
+  const customerId = getOrCreateCustomerId();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -41,8 +52,8 @@ export default function BookingForm() {
       });
 
       if (response.success) {
-        alert('✅ 예약 요청이 접수되었습니다! 곧 제안을 보내드리겠습니다.');
-        navigate('/customer/proposals');
+        alert('✅ 예약 요청이 접수되었습니다!\n\n예약번호: ' + response.data.id.slice(0, 8) + '\n\n매칭 시스템이 최적의 경로를 찾고 있습니다.');
+        navigate('/customer');
       } else {
         setError('예약 요청에 실패했습니다. 다시 시도해주세요.');
       }
