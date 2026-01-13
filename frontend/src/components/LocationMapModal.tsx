@@ -150,8 +150,8 @@ export default function LocationMapModal({
 
     const initializeMap = () => {
       if (!window.kakao || !window.kakao.maps) {
-        console.error('Kakao Maps SDK가 로드되지 않았습니다.');
-        setError('지도를 로드할 수 없습니다. 페이지를 새로고침해주세요.');
+        console.error('❌ Kakao Maps SDK가 로드되지 않았습니다.');
+        setError('지도를 로드할 수 없습니다.\n\n카카오 Maps API 할당량이 초과되었거나 네트워크 문제가 있을 수 있습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.');
         setMapLoading(false);
         return;
       }
@@ -172,7 +172,7 @@ export default function LocationMapModal({
             level: 3,
           };
 
-          console.log('Initializing Kakao Map...', { initialLat, initialLng });
+          console.log('✅ Kakao Map 초기화 중...', { initialLat, initialLng });
           const mapInstance = new kakao.maps.Map(container, options);
           setMap(mapInstance);
           setMapLoading(false);
@@ -193,7 +193,7 @@ export default function LocationMapModal({
             // 마커 위치 변경
             markerInstance.setPosition(latlng);
 
-            // 좌표로 주소 검색
+            // 좌표로 주소 검색 (Reverse Geocoding)
             setSelectedAddress('주소를 가져오는 중...');
             const geocoder = new kakao.maps.services.Geocoder();
             geocoder.coord2Address(lng, lat, (result: any, status: any) => {
@@ -203,25 +203,29 @@ export default function LocationMapModal({
                 setSelectedLat(lat);
                 setSelectedLng(lng);
               } else {
-                setSelectedAddress('주소를 가져올 수 없습니다');
+                console.warn('⚠️ Reverse Geocoding 실패, API 할당량 초과 가능');
+                setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+                setSelectedLat(lat);
+                setSelectedLng(lng);
               }
             });
           });
 
-          // 초기 주소 가져오기
+          // 초기 주소 가져오기 (Reverse Geocoding)
           const geocoder = new kakao.maps.services.Geocoder();
           geocoder.coord2Address(initialLng, initialLat, (result: any, status: any) => {
             if (status === kakao.maps.services.Status.OK) {
               const address = result[0].road_address?.address_name || result[0].address.address_name;
               setSelectedAddress(address);
             } else {
-              setSelectedAddress('현재 위치');
+              console.warn('⚠️ 초기 주소 조회 실패, API 할당량 초과 가능');
+              setSelectedAddress('현재 위치 (주소 조회 불가)');
             }
           });
         });
       } catch (error) {
-        console.error('Error initializing map:', error);
-        setError('지도 초기화 실패');
+        console.error('❌ 지도 초기화 실패:', error);
+        setError('지도 초기화에 실패했습니다.\n\n"주소 찾기" 버튼을 이용해주세요.');
         setMapLoading(false);
       }
     };
@@ -361,15 +365,24 @@ export default function LocationMapModal({
             </div>
           )}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-red-50">
-              <div className="text-center p-6">
-                <p className="text-red-600 font-semibold mb-2">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                >
-                  페이지 새로고침
-                </button>
+            <div className="absolute inset-0 flex items-center justify-center bg-yellow-50">
+              <div className="text-center p-6 max-w-md">
+                <div className="text-5xl mb-4">🗺️</div>
+                <p className="text-gray-800 font-semibold mb-2 whitespace-pre-line">{error}</p>
+                <div className="mt-6 space-y-2">
+                  <button
+                    onClick={onClose}
+                    className="w-full px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-900 transition"
+                  >
+                    닫고 "주소 찾기" 사용하기
+                  </button>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition text-sm"
+                  >
+                    페이지 새로고침 (자정 이후 권장)
+                  </button>
+                </div>
               </div>
             </div>
           )}

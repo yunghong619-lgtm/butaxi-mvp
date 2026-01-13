@@ -29,7 +29,15 @@ export default function CustomerHome() {
         </Link>
 
         {/* Quick Links */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <Link
+            to="/customer/requests"
+            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-colors"
+          >
+            <h3 className="font-bold text-lg mb-2">내 예약 요청</h3>
+            <p className="text-gray-600 text-sm">신청한 예약 요청을 확인하세요</p>
+          </Link>
+
           <Link
             to="/customer/proposals"
             className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-colors"

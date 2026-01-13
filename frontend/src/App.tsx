@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import CustomerHome from './pages/customer/CustomerHome';
 import BookingForm from './pages/customer/BookingForm';
+import RideRequestList from './pages/customer/RideRequestList';
 import ProposalList from './pages/customer/ProposalList';
 import BookingList from './pages/customer/BookingList';
 import TripTracking from './pages/customer/TripTracking';
@@ -21,6 +22,7 @@ function App() {
         <Route path="/customer" element={<Layout />}>
           <Route index element={<CustomerHome />} />
           <Route path="booking" element={<BookingForm />} />
+          <Route path="requests" element={<RideRequestList />} />
           <Route path="proposals" element={<ProposalList />} />
           <Route path="bookings" element={<BookingList />} />
           <Route path="trips/:tripId" element={<TripTracking />} />

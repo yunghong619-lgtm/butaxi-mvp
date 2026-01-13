@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { kakaoService } from '../services/kakao.service';
+import { matchingService } from '../services/matching.service';
 
 const prisma = new PrismaClient();
 
@@ -106,6 +107,11 @@ export class RideController {
       });
 
       console.log(`✅ 예약 요청 생성: ${request.id}`);
+
+      // 🚀 즉시 매칭 실행 (비동기로 백그라운드 실행)
+      matchingService.runMatchingBatch().catch((err) => {
+        console.error('⚠️ 즉시 매칭 실패:', err);
+      });
 
       res.json({
         success: true,

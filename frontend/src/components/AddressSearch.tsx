@@ -122,20 +122,24 @@ export default function AddressSearch({
     }
   };
 
-  // 현위치 버튼 핸들러
+  // 현위치 버튼 핸들러 (개선된 에러 핸들링)
   const handleCurrentLocation = () => {
     setIsLoadingLocation(true);
 
+    // 브라우저 지원 여부 확인
     if (!navigator.geolocation) {
-      alert('브라우저에서 위치 정보를 지원하지 않습니다.');
+      alert('❌ 브라우저에서 위치 정보를 지원하지 않습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.');
       setIsLoadingLocation(false);
       return;
     }
 
+    // 위치 권한 요청
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
+        
+        console.log('✅ 현재 위치:', lat, lng);
         
         // 현재 위치 저장
         setCurrentLocation({ lat, lng });
@@ -145,14 +149,31 @@ export default function AddressSearch({
         setIsLoadingLocation(false);
       },
       (error) => {
-        console.error('위치 정보 가져오기 실패:', error);
-        alert('위치 정보를 가져올 수 없습니다.\n브라우저 설정에서 위치 권한을 허용해주세요.');
+        console.error('❌ 위치 정보 가져오기 실패:', error);
+        
+        let errorMessage = '위치 정보를 가져올 수 없습니다.\n\n';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += '📍 위치 권한이 거부되었습니다.\n\n브라우저 설정에서 위치 권한을 허용해주세요.\n\n대신 "주소 찾기" 버튼을 이용하실 수 있습니다.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += '📡 위치 정보를 사용할 수 없습니다.\n\nGPS가 꺼져있거나 실내에 있을 수 있습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += '⏱️ 위치 정보 요청 시간이 초과되었습니다.\n\n네트워크 연결을 확인하거나\n"주소 찾기" 버튼을 이용해주세요.';
+            break;
+          default:
+            errorMessage += '알 수 없는 오류가 발생했습니다.\n\n"주소 찾기" 버튼을 이용해주세요.';
+        }
+        
+        alert(errorMessage);
         setIsLoadingLocation(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        timeout: 20000, // 20초로 증가
+        maximumAge: 60000, // 1분 이내 캐시 허용
       }
     );
   };
