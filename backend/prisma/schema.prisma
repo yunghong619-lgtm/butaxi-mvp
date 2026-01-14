@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -117,6 +117,8 @@ model Trip {
   // Relations
   stops    Stop[]
   bookings Booking[]
+  outboundProposals Proposal[] @relation("ProposalOutboundTrip")
+  returnProposals   Proposal[] @relation("ProposalReturnTrip")
 
   @@map("trips")
 }
@@ -160,11 +162,13 @@ model Proposal {
   
   // 가는 편 정보
   outboundTripId String?
+  outboundTrip   Trip?   @relation("ProposalOutboundTrip", fields: [outboundTripId], references: [id])
   pickupTime     DateTime
   dropoffTime    DateTime
   
   // 귀가 편 정보
   returnTripId   String?
+  returnTrip     Trip?   @relation("ProposalReturnTrip", fields: [returnTripId], references: [id])
   returnPickupTime  DateTime
   returnDropoffTime DateTime
   
