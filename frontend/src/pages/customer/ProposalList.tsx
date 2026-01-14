@@ -6,12 +6,16 @@ export default function ProposalList() {
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 테스트용 고객 ID
-  const customerId = 'customer1-id'; // TODO: 실제 로그인 시스템 연동
+  // localStorage에서 customerId 가져오기
+  const customerId = localStorage.getItem('butaxi_customer_id') || '';
 
   useEffect(() => {
-    loadProposals();
-  }, []);
+    if (customerId) {
+      loadProposals();
+    } else {
+      setLoading(false);
+    }
+  }, [customerId]);
 
   const loadProposals = async () => {
     try {
@@ -82,10 +86,13 @@ export default function ProposalList() {
           {proposals.map((proposal) => (
             <div key={proposal.id} className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
+                <div className="space-y-1">
                   <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
                     활성 제안
                   </span>
+                  <div className="text-xs text-gray-400 font-mono">
+                    제안 #{proposal.id.slice(0, 8)} / 요청 #{proposal.requestId?.slice(0, 8) || 'N/A'}
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-primary-600">

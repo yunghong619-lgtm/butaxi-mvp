@@ -99,6 +99,9 @@ export default function RideRequestList() {
                     {format(new Date(request.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
                   </span>
                 </div>
+                <div className="text-xs text-gray-400 font-mono">
+                  #{request.id.slice(0, 8)}
+                </div>
               </div>
 
               {/* 왕복 정보 */}
