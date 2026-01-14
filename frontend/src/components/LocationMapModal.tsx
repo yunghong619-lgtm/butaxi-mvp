@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 
 interface LocationMapModalProps {
   isOpen: boolean;
@@ -44,32 +43,45 @@ export default function LocationMapModal({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  // 주소 검색 (Naver Geocoding API - Backend를 통해 처리)
+  // 주소 검색 (Naver Web JS Geocoder 직접 사용)
   const searchAddress = async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSearchResults([]);
       return;
     }
 
-    setSearchLoading(true);
-    try {
-      // Backend를 통해 검색 (CORS 우회)
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await axios.post(`${API_URL}/api/geocode/search`, {
-        query,
-      });
-
-      if (response.data.success && response.data.data) {
-        setSearchResults(response.data.data);
-      } else {
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error('주소 검색 실패:', error);
+    if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+      console.error('Naver Maps Service not loaded');
       setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
+      return;
     }
+
+    setSearchLoading(true);
+
+    window.naver.maps.Service.geocode(
+      { query: query },
+      (status: any, response: any) => {
+        setSearchLoading(false);
+
+        if (status !== window.naver.maps.Service.Status.OK) {
+          console.error('Geocode 실패:', status);
+          setSearchResults([]);
+          return;
+        }
+
+        if (response.v2.addresses && response.v2.addresses.length > 0) {
+          const results: SearchResult[] = response.v2.addresses.map((addr: any) => ({
+            roadAddress: addr.roadAddress || '',
+            jibunAddress: addr.jibunAddress || '',
+            x: addr.x,
+            y: addr.y,
+          }));
+          setSearchResults(results);
+        } else {
+          setSearchResults([]);
+        }
+      }
+    );
   };
 
   // 검색어 입력 시 디바운싱
@@ -104,24 +116,54 @@ export default function LocationMapModal({
     }
   };
 
-  // Reverse Geocoding (좌표 → 주소)
+  // Reverse Geocoding (좌표 → 주소) - Naver Web JS 사용
   const reverseGeocode = async (lat: number, lng: number) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await axios.post(`${API_URL}/api/geocode/reverse`, {
-        latitude: lat,
-        longitude: lng,
-      });
-
-      if (response.data.success && response.data.data) {
-        setSelectedAddress(response.data.data);
-      } else {
-        setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
-      }
-    } catch (error) {
-      console.error('Reverse Geocoding 실패:', error);
+    if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+      console.error('Naver Maps Service not loaded');
       setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+      return;
     }
+
+    const coord = new window.naver.maps.LatLng(lat, lng);
+
+    window.naver.maps.Service.reverseGeocode(
+      {
+        coords: coord,
+        orders: [
+          window.naver.maps.Service.OrderType.ROAD_ADDR,
+          window.naver.maps.Service.OrderType.ADDR,
+        ].join(','),
+      },
+      (status: any, response: any) => {
+        if (status !== window.naver.maps.Service.Status.OK) {
+          console.error('Reverse Geocode 실패:', status);
+          setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+          return;
+        }
+
+        if (response.v2.results && response.v2.results.length > 0) {
+          const result = response.v2.results[0];
+          const region = result.region;
+          const land = result.land;
+
+          let address = '';
+
+          // 도로명 주소 우선
+          if (land && land.addition0 && land.addition0.value) {
+            address = `${region.area1.name} ${region.area2.name} ${land.addition0.value}`;
+          } else if (land) {
+            // 지번 주소
+            address = `${region.area1.name} ${region.area2.name} ${region.area3.name} ${land.name || ''} ${land.number1 || ''}${land.number2 ? '-' + land.number2 : ''}`.trim();
+          } else {
+            address = `${region.area1.name} ${region.area2.name} ${region.area3.name}`.trim();
+          }
+
+          setSelectedAddress(address || `위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+        } else {
+          setSelectedAddress(`위도: ${lat.toFixed(5)}, 경도: ${lng.toFixed(5)}`);
+        }
+      }
+    );
   };
 
   useEffect(() => {
