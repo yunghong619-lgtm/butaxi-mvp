@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
-  timeout: 60000, // 60초 (Render 무료 플랜 서버 깨우기 시간 고려)
+  baseURL: '/api',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -59,11 +57,15 @@ export const bookingApi = {
 export const tripApi = {
   getDriverTrips: (driverId: string) => api.get(`/trips/driver/${driverId}`),
   getTripDetail: (tripId: string) => api.get(`/trips/${tripId}`),
-  updateTripStatus: (tripId: string, status: string) => 
+  updateTripStatus: (tripId: string, status: string) =>
     api.patch(`/trips/${tripId}/status`, { status }),
   checkInStop: (stopId: string) => api.post(`/trips/stops/${stopId}/checkin`),
-  updateDriverLocation: (tripId: string, location: { latitude: number; longitude: number }) =>
-    api.patch(`/trips/${tripId}/location`, location),
+};
+
+// ========== Customer API ==========
+export const customerApi = {
+  getByPhone: (phone: string) => api.get(`/customers/phone/${phone}`),
+  getDataByPhone: (phone: string) => api.get(`/customers/phone/${phone}/data`),
 };
 
 export default api;

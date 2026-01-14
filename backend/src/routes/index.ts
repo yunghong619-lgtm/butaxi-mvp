@@ -3,7 +3,7 @@ import { rideController } from '../controllers/ride.controller';
 import { proposalController } from '../controllers/proposal.controller';
 import { bookingController } from '../controllers/booking.controller';
 import { tripController } from '../controllers/trip.controller';
-import { geocodeController } from '../controllers/geocode.controller';
+import { customerController } from '../controllers/customer.controller';
 
 const router = Router();
 
@@ -29,17 +29,16 @@ router.get('/trips/driver/:driverId', tripController.getDriverTrips.bind(tripCon
 router.get('/trips/:tripId', tripController.getTripDetail.bind(tripController));
 router.patch('/trips/:tripId/status', tripController.updateTripStatus.bind(tripController));
 router.post('/trips/stops/:stopId/checkin', tripController.checkInStop.bind(tripController));
-router.patch('/trips/:tripId/location', tripController.updateDriverLocation.bind(tripController));
 
-// ========== Geocoding Routes (네이버 Maps API) ==========
-router.post('/geocode/search', geocodeController.searchAddress.bind(geocodeController));
-router.post('/geocode/reverse', geocodeController.reverseGeocode.bind(geocodeController));
+// ========== Customer Routes ==========
+router.get('/customers/phone/:phone', customerController.getCustomerByPhone.bind(customerController));
+router.get('/customers/phone/:phone/data', customerController.getCustomerDataByPhone.bind(customerController));
 
 // ========== Health Check ==========
 router.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'RETURN Backend is running!',
+    message: 'BUTAXI Backend is running!',
     timestamp: new Date().toISOString(),
   });
 });
