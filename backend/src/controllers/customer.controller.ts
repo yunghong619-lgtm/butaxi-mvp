@@ -5,6 +5,66 @@ const prisma = new PrismaClient();
 
 export class CustomerController {
   /**
+   * 고객 생성 또는 기존 고객 조회 (전화번호 기반)
+   */
+  async findOrCreateCustomer(req: Request, res: Response) {
+    try {
+      const { name, phone, email } = req.body;
+
+      if (!name || !phone) {
+        return res.status(400).json({
+          success: false,
+          error: '이름과 전화번호는 필수입니다.',
+        });
+      }
+
+      // 전화번호 정규화
+      const normalizedPhone = phone.replace(/-/g, '');
+
+      // 기존 고객 조회
+      let customer = await prisma.user.findFirst({
+        where: {
+          phone: {
+            contains: normalizedPhone.slice(-8),
+          },
+          role: 'CUSTOMER',
+        },
+      });
+
+      // 없으면 새로 생성
+      if (!customer) {
+        customer = await prisma.user.create({
+          data: {
+            name,
+            phone: normalizedPhone,
+            email: email || `${normalizedPhone}@butaxi.com`,
+            role: 'CUSTOMER',
+          },
+        });
+        console.log(`👤 새 고객 생성: ${customer.name} (${customer.phone})`);
+      } else {
+        console.log(`👤 기존 고객 확인: ${customer.name} (${customer.phone})`);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          email: customer.email,
+        },
+      });
+    } catch (error) {
+      console.error('고객 생성/조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        error: '처리 중 오류가 발생했습니다.',
+      });
+    }
+  }
+
+  /**
    * 전화번호로 고객 조회
    */
   async getCustomerByPhone(req: Request, res: Response) {

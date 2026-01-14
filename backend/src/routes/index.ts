@@ -31,6 +31,7 @@ router.patch('/trips/:tripId/status', tripController.updateTripStatus.bind(tripC
 router.post('/trips/stops/:stopId/checkin', tripController.checkInStop.bind(tripController));
 
 // ========== Customer Routes ==========
+router.post('/customers', customerController.findOrCreateCustomer.bind(customerController));
 router.get('/customers/phone/:phone', customerController.getCustomerByPhone.bind(customerController));
 router.get('/customers/phone/:phone/data', customerController.getCustomerDataByPhone.bind(customerController));
 

@@ -64,6 +64,8 @@ export const tripApi = {
 
 // ========== Customer API ==========
 export const customerApi = {
+  findOrCreate: (data: { name: string; phone: string; email?: string }) =>
+    api.post('/customers', data),
   getByPhone: (phone: string) => api.get(`/customers/phone/${phone}`),
   getDataByPhone: (phone: string) => api.get(`/customers/phone/${phone}/data`),
 };
