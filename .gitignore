@@ -46,3 +46,17 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Local utility scripts
+backend/check-db.js
+backend/reset-and-rematch.ts
+backend/set-test-customer.js
+
+# Build artifacts
+shared/types/*.js
+shared/types/*.js.map
+shared/types/*.d.ts
+shared/types/*.d.ts.map
+
+# Claude settings
+.claude/settings.local.json
