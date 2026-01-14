@@ -101,6 +101,42 @@ export default function ProposalList() {
                 </div>
               </div>
 
+              {/* 차량 & 기사 정보 - 우버 스타일 */}
+              {proposal.outboundTrip?.vehicle && (
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 mb-6 border border-blue-100">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                      🚗
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-lg text-gray-900">{proposal.outboundTrip.vehicle.name}</h4>
+                      <p className="text-gray-600 text-sm font-medium">{proposal.outboundTrip.vehicle.licensePlate}</p>
+                      <p className="text-gray-500 text-xs mt-1">최대 탑승 {proposal.outboundTrip.vehicle.capacity}명</p>
+                    </div>
+                  </div>
+                  
+                  {proposal.outboundTrip.driver && (
+                    <div className="flex items-center gap-3 pt-4 border-t border-blue-200">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black text-white rounded-full flex items-center justify-center font-bold text-lg shadow-md">
+                        {proposal.outboundTrip.driver.name[0]}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{proposal.outboundTrip.driver.name} 기사님</p>
+                        <p className="text-sm text-gray-600">{proposal.outboundTrip.driver.phone}</p>
+                      </div>
+                      <div className="text-right">
+                        <a 
+                          href={`tel:${proposal.outboundTrip.driver.phone}`}
+                          className="inline-flex items-center gap-1 px-3 py-2 bg-green-500 text-white text-xs font-semibold rounded-lg hover:bg-green-600 transition"
+                        >
+                          📞 전화
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* 가는 편 */}
                 <div className="border-l-4 border-primary-500 pl-4">

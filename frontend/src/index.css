@@ -32,6 +32,21 @@ code {
   animation: fadeIn 0.3s ease-out;
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
 /* Datetime Input Styling */
 input[type="datetime-local"] {
   -webkit-appearance: none;

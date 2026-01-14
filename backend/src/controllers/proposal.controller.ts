@@ -25,6 +25,32 @@ export class ProposalController {
         },
         include: {
           request: true,
+          outboundTrip: {
+            include: {
+              vehicle: true,
+              driver: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          returnTrip: {
+            include: {
+              vehicle: true,
+              driver: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  email: true,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -66,6 +92,32 @@ export class ProposalController {
                   name: true,
                   email: true,
                   phone: true,
+                },
+              },
+            },
+          },
+          outboundTrip: {
+            include: {
+              vehicle: true,
+              driver: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          returnTrip: {
+            include: {
+              vehicle: true,
+              driver: {
+                select: {
+                  id: true,
+                  name: true,
+                  phone: true,
+                  email: true,
                 },
               },
             },

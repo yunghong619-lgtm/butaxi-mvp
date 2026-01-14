@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { rideApi } from '../../services/api';
 import AddressSearch from '../../components/AddressSearch';
 import TripMap from '../../components/TripMap';
+import DateTimePicker from '../../components/DateTimePicker';
 
 export default function BookingForm() {
   const navigate = useNavigate();
@@ -193,20 +194,12 @@ export default function BookingForm() {
                   placeholder="도착 위치를 검색하세요"
                 />
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    출발 시간
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.desiredPickupTime}
-                    onChange={(e) => setFormData({ ...formData, desiredPickupTime: e.target.value })}
-                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md cursor-pointer"
-                  />
-                </div>
+                <DateTimePicker
+                  label="출발 시간"
+                  value={formData.desiredPickupTime}
+                  onChange={(value) => setFormData({ ...formData, desiredPickupTime: value })}
+                  minDate={new Date().toISOString().split('T')[0]}
+                />
               </div>
             </div>
 
@@ -252,20 +245,12 @@ export default function BookingForm() {
                   placeholder="집 주소를 검색하세요"
                 />
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    귀가 시간
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.desiredReturnTime}
-                    onChange={(e) => setFormData({ ...formData, desiredReturnTime: e.target.value })}
-                    className="w-full px-5 py-4 text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all shadow-sm hover:shadow-md cursor-pointer"
-                  />
-                </div>
+                <DateTimePicker
+                  label="귀가 시간"
+                  value={formData.desiredReturnTime}
+                  onChange={(value) => setFormData({ ...formData, desiredReturnTime: value })}
+                  minDate={new Date().toISOString().split('T')[0]}
+                />
               </div>
             </div>
 
