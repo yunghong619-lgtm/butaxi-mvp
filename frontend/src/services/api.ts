@@ -60,6 +60,8 @@ export const tripApi = {
   updateTripStatus: (tripId: string, status: string) =>
     api.patch(`/trips/${tripId}/status`, { status }),
   checkInStop: (stopId: string) => api.post(`/trips/stops/${stopId}/checkin`),
+  updateDriverLocation: (tripId: string, location: { latitude: number; longitude: number }) =>
+    api.patch(`/trips/${tripId}/location`, location),
 };
 
 // ========== Customer API ==========
