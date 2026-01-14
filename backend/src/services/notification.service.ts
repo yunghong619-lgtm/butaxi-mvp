@@ -1,6 +1,6 @@
 import { emailService } from './email.service';
 import { smsService } from './sms.service';
-import type { CustomerSchedule } from '../../../shared/types';
+import type { CustomerSchedule } from '../types';
 
 export class NotificationService {
   /**

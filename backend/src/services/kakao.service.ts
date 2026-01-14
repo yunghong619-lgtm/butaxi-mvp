@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
-import type { Location, RouteInfo } from '../../../shared/types';
+import type { Location, RouteInfo } from '../types';
 
 const KAKAO_API_BASE = 'https://dapi.kakao.com';
 
@@ -34,8 +34,8 @@ export class KakaoService {
         const result = data.documents[0];
         return {
           address: result.address_name,
-          latitude: parseFloat(result.y),
-          longitude: parseFloat(result.x),
+          lat: parseFloat(result.y),
+          lng: parseFloat(result.x),
         };
       }
 
@@ -111,8 +111,8 @@ export class KakaoService {
         distance,
         duration: Math.ceil(duration),
         path: [
-          { address: '', latitude: origin.lat, longitude: origin.lng },
-          { address: '', latitude: destination.lat, longitude: destination.lng },
+          { address: '', lat: origin.lat, lng: origin.lng },
+          { address: '', lat: destination.lat, lng: destination.lng },
         ],
       };
     } catch (error) {
@@ -130,8 +130,8 @@ export class KakaoService {
         distance,
         duration: Math.ceil((distance / 40) * 60),
         path: [
-          { address: '', latitude: origin.lat, longitude: origin.lng },
-          { address: '', latitude: destination.lat, longitude: destination.lng },
+          { address: '', lat: origin.lat, lng: origin.lng },
+          { address: '', lat: destination.lat, lng: destination.lng },
         ],
       };
     }
@@ -146,8 +146,8 @@ export class KakaoService {
 
     for (let i = 0; i < stops.length - 1; i++) {
       const route = await this.calculateRoute(
-        { lat: stops[i].latitude, lng: stops[i].longitude },
-        { lat: stops[i + 1].latitude, lng: stops[i + 1].longitude }
+        { lat: stops[i].lat, lng: stops[i].lng },
+        { lat: stops[i + 1].lat, lng: stops[i + 1].lng }
       );
 
       if (route) {

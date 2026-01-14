@@ -3,6 +3,7 @@ import coolsms from 'coolsms-node-sdk';
 export class SMSService {
   private messageService: any | null = null;
   private from: string;
+  private testReceiver: string | null = null; // 테스트 모드: 모든 SMS를 이 번호로 발송
 
   constructor() {
     this.from = '';
@@ -14,11 +15,17 @@ export class SMSService {
     const apiSecret = process.env.SOLAPI_API_SECRET;
     this.from = process.env.SOLAPI_SENDER_PHONE || process.env.SOLAPI_FROM || '010-4922-0573';
 
+    // 테스트 모드: 설정된 경우 모든 SMS를 이 번호로 발송
+    this.testReceiver = process.env.SMS_TEST_RECEIVER || null;
+
     if (apiKey && apiSecret) {
       try {
         this.messageService = new coolsms(apiKey, apiSecret);
         console.log('✅ SOLAPI SMS 서비스 초기화 완료');
         console.log(`   발신번호: ${this.from}`);
+        if (this.testReceiver) {
+          console.log(`   🧪 테스트 모드: 모든 SMS → ${this.testReceiver}`);
+        }
       } catch (error) {
         console.error('❌ SOLAPI 초기화 실패:', error);
       }
@@ -37,17 +44,24 @@ export class SMSService {
     }
 
     try {
-      // 하이픈 제거 및 국가 코드 처리
-      const phoneNumber = to.replace(/-/g, '');
+      // 테스트 모드: 모든 SMS를 테스트 번호로 발송
+      const targetPhone = this.testReceiver || to;
+      const phoneNumber = targetPhone.replace(/-/g, '');
+
+      // 테스트 모드면 원래 수신자 정보를 메시지에 추가
+      const finalMessage = this.testReceiver
+        ? `[테스트-원래수신:${to}]\n${message}`
+        : message;
 
       const result = await this.messageService.sendOne({
         to: phoneNumber,
         from: this.from,
-        text: message,
+        text: finalMessage,
       });
 
       console.log('✅ SMS 발송 성공:', {
         to: phoneNumber,
+        originalTo: this.testReceiver ? to : undefined,
         messageId: result.messageId,
         statusCode: result.statusCode,
       });

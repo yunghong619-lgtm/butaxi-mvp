@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { config } from '../config';
-import type { CustomerSchedule } from '../../../shared/types';
+import type { CustomerSchedule } from '../types';
 
 export class EmailService {
   private transporter: nodemailer.Transporter | null = null;

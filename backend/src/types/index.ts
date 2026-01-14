@@ -76,3 +76,16 @@ export interface MatchingResult {
     rideRequestId: string;
   }>;
 }
+
+export interface CustomerSchedule {
+  pickupTime: Date;
+  dropoffTime: Date;
+  returnPickupTime: Date;
+  returnDropoffTime: Date;
+}
+
+export interface RouteInfo {
+  distance: number;  // km
+  duration: number;  // minutes
+  path: Location[];
+}

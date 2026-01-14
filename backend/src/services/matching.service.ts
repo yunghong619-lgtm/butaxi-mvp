@@ -1,4 +1,7 @@
-import { PrismaClient, RideRequest, TripDirection } from '@prisma/client';
+import { PrismaClient, RideRequest } from '@prisma/client';
+
+// TripDirection 타입 정의 (OUTBOUND: 가는편, RETURN: 귀가편)
+type TripDirection = 'OUTBOUND' | 'RETURN';
 import { addMinutes, subMinutes, isWithinInterval, format } from 'date-fns';
 import { config } from '../config';
 import { naverService } from './naver.service';
