@@ -17,7 +17,11 @@ export class ProposalController {
           request: {
             customerId,
           },
-          status: 'ACTIVE',
+          // ACTIVE 또는 만료되지 않은 모든 제안 표시
+          OR: [
+            { status: 'ACTIVE' },
+            { status: 'PENDING' },
+          ],
         },
         include: {
           request: true,
@@ -26,6 +30,10 @@ export class ProposalController {
           createdAt: 'desc',
         },
       });
+
+      // 만료 여부 체크 및 필터링 (expiresAt이 지났으면 제외)
+      const now = new Date();
+      const validProposals = proposals.filter(p => new Date(p.expiresAt) > now);
 
       res.json({
         success: true,

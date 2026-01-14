@@ -1,7 +1,8 @@
 import { PrismaClient, RideRequest, TripDirection } from '@prisma/client';
-import { addMinutes, subMinutes, isWithinInterval } from 'date-fns';
+import { addMinutes, subMinutes, isWithinInterval, format } from 'date-fns';
 import { config } from '../config';
 import { naverService } from './naver.service';
+import { smsService } from './sms.service';
 
 const prisma = new PrismaClient();
 
@@ -214,8 +215,8 @@ export class MatchingService {
             returnDropoffTime: group.direction === 'RETURN' ? trip.endTime : request.desiredReturnTime,
             // 가격 (임시)
             estimatedPrice: 15000,
-            // 유효기간 (15분)
-            expiresAt: addMinutes(new Date(), 15),
+            // 유효기간 (24시간 - 테스트용)
+            expiresAt: addMinutes(new Date(), 60 * 24),
           },
         });
 
