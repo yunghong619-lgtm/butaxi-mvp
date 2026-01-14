@@ -12,16 +12,14 @@ export class ProposalController {
     try {
       const { customerId } = req.params;
 
+      console.log(`📋 Proposal 조회 요청: customerId=${customerId}`);
+
       const proposals = await prisma.proposal.findMany({
         where: {
           request: {
             customerId,
           },
-          // ACTIVE 또는 만료되지 않은 모든 제안 표시
-          OR: [
-            { status: 'ACTIVE' },
-            { status: 'PENDING' },
-          ],
+          status: 'ACTIVE', // ACTIVE 상태만 조회 (만료된 것 제외)
         },
         include: {
           request: true,
@@ -57,16 +55,23 @@ export class ProposalController {
         },
       });
 
-      // 만료 여부 체크 및 필터링 (expiresAt이 지났으면 제외)
+      console.log(`✅ Proposal ${proposals.length}개 조회됨`);
+      
+      // 만료 체크 (추가 필터링)
       const now = new Date();
       const validProposals = proposals.filter(p => new Date(p.expiresAt) > now);
 
+      if (validProposals.length < proposals.length) {
+        console.log(`⚠️ 만료된 Proposal ${proposals.length - validProposals.length}개 제외`);
+      }
+
       res.json({
         success: true,
-        data: proposals,
+        data: validProposals,
+        count: validProposals.length,
       });
     } catch (error) {
-      console.error('Proposal 조회 실패:', error);
+      console.error('❌ Proposal 조회 실패:', error);
       res.status(500).json({
         success: false,
         error: '조회 중 오류가 발생했습니다.',
