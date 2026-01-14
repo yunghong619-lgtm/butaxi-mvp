@@ -75,11 +75,12 @@ export class MatchingService {
         // 시간 체크 (±30분 or ±45분)
         const isTimeMatch = isWithinInterval(rTime, { start: windowStart, end: windowEnd });
 
-        // 거리 체크 (반경 5km 이내)
+        // 거리 체크 (config에서 설정한 반경 이내, 기본 10km)
+        const matchingRadius = config.policy.matchingRadiusKm || 10;
         const isLocationMatch = naverService.isWithinRadius(
           { lat: targetLat, lng: targetLng },
           { lat: rLat, lng: rLng },
-          5 // 5km
+          matchingRadius
         );
 
         return isTimeMatch && isLocationMatch;

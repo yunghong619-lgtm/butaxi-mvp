@@ -150,24 +150,11 @@ export default function AddressSearch({
       },
       (error) => {
         console.error('❌ 위치 정보 가져오기 실패:', error);
-        
-        let errorMessage = '위치 정보를 가져올 수 없습니다.\n\n';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage += '📍 위치 권한이 거부되었습니다.\n\n브라우저 설정에서 위치 권한을 허용해주세요.\n\n대신 "주소 찾기" 버튼을 이용하실 수 있습니다.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage += '📡 위치 정보를 사용할 수 없습니다.\n\nGPS가 꺼져있거나 실내에 있을 수 있습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.';
-            break;
-          case error.TIMEOUT:
-            errorMessage += '⏱️ 위치 정보 요청 시간이 초과되었습니다.\n\n네트워크 연결을 확인하거나\n"주소 찾기" 버튼을 이용해주세요.';
-            break;
-          default:
-            errorMessage += '알 수 없는 오류가 발생했습니다.\n\n"주소 찾기" 버튼을 이용해주세요.';
-        }
-        
-        alert(errorMessage);
+
+        // 위치 정보 실패 시 기본 위치(서울)로 지도 열기
+        console.log('📍 기본 위치(서울)로 지도를 엽니다.');
+        setCurrentLocation({ lat: 37.5665, lng: 126.9780 });
+        setIsMapModalOpen(true);
         setIsLoadingLocation(false);
       },
       {

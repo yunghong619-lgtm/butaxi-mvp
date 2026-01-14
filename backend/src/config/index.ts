@@ -34,12 +34,13 @@ export const config = {
     useReal: process.env.USE_REAL_PAYMENT === 'true',
   },
   
-  // MVP 정책 설정
+  // MVP 정책 설정 (테스트용으로 완화)
   policy: {
-    pickupTimeWindow: 30,      // ±30분
-    returnTimeWindow: 45,      // ±45분
-    proposalExpiryMinutes: 15, // 15분
+    pickupTimeWindow: 60,      // ±60분 (테스트용 완화)
+    returnTimeWindow: 60,      // ±60분 (테스트용 완화)
+    proposalExpiryMinutes: 60 * 24, // 24시간 (테스트용)
     maxPassengersPerTrip: 4,   // 차량당 최대 4명
     bufferMinutesPerStop: 5,   // 각 Stop당 버퍼 시간
+    matchingRadiusKm: 10,      // 매칭 반경 10km (테스트용 완화)
   },
 };
