@@ -1,8 +1,22 @@
 import axios from 'axios';
 
+// 환경에 따라 백엔드 URL 설정
+const getBaseURL = () => {
+  // Vite 환경변수 또는 프로덕션 URL
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // 프로덕션 (Render 배포)
+  if (import.meta.env.PROD) {
+    return 'https://butaxi-backend.onrender.com/api';
+  }
+  // 개발 환경
+  return 'http://localhost:3000/api';
+};
+
 const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
+  baseURL: getBaseURL(),
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
