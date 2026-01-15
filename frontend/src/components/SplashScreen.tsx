@@ -120,7 +120,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         <p className="text-xl md:text-2xl text-amber-400 font-black tracking-wide">
           설렘 태우고 출발,
         </p>
-        <p className="text-xl md:text-2xl text-amber-400 font-black tracking-wide mt-1">
+        <p className="text-xl md:text-2xl text-rose-400 font-black tracking-wide mt-1">
           행복과 취기를 모시고 귀가
         </p>
       </div>
