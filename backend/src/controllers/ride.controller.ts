@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { naverService } from '../services/naver.service';
+import { kakaoService } from '../services/kakao.service';
 import { matchingService } from '../services/matching.service';
 
 const prisma = new PrismaClient();
@@ -13,93 +13,138 @@ export class RideController {
     try {
       const {
         customerId,
+        customerName,
+        customerPhone,
         pickupAddress,
+        pickupLat,
+        pickupLng,
         desiredPickupTime,
         dropoffAddress,
+        dropoffLat,
+        dropoffLng,
         returnAddress,
+        returnLat,
+        returnLng,
         desiredReturnTime,
         homeAddress,
+        homeLat,
+        homeLng,
         passengerCount,
         specialRequests,
       } = req.body;
 
-      // User 자동 생성 (없는 경우)
-      const existingUser = await prisma.user.findUnique({
+      // customerId로 User 조회 또는 생성
+      let user = await prisma.user.findUnique({
         where: { id: customerId },
       });
 
-      if (!existingUser) {
-        console.log(`👤 새 사용자 자동 생성: ${customerId}`);
-        await prisma.user.create({
+      if (!user) {
+        // User가 없으면 새로 생성
+        user = await prisma.user.create({
           data: {
             id: customerId,
-            name: `고객${customerId.slice(0, 8)}`,
-            phone: '010-4922-0573', // 테스트용 실제 번호
+            name: customerName || '고객',
+            phone: customerPhone || '010-0000-0000',
+            email: `${customerId}@temp.butaxi.com`,
             role: 'CUSTOMER',
-            email: `${customerId}@butaxi.com`,
           },
         });
+        console.log(`👤 새 고객 생성: ${user.id}`);
       }
 
-      // 주소를 좌표로 변환 (실패 시 더미 좌표 사용)
-      const generateDummyCoordinates = (address: string) => {
-        let hash = 0;
-        for (let i = 0; i < address.length; i++) {
-          hash = ((hash << 5) - hash) + address.charCodeAt(i);
-          hash = hash & hash;
+      // 프론트엔드에서 좌표를 보내면 사용, 없으면 Kakao API로 조회
+      let finalPickupLat = pickupLat;
+      let finalPickupLng = pickupLng;
+      let finalPickupAddress = pickupAddress;
+
+      let finalDropoffLat = dropoffLat;
+      let finalDropoffLng = dropoffLng;
+      let finalDropoffAddress = dropoffAddress;
+
+      let finalReturnLat = returnLat;
+      let finalReturnLng = returnLng;
+      let finalReturnAddress = returnAddress;
+
+      let finalHomeLat = homeLat;
+      let finalHomeLng = homeLng;
+      let finalHomeAddress = homeAddress;
+
+      // 좌표가 없는 경우에만 Kakao API 호출
+      if (!finalPickupLat || !finalPickupLng) {
+        const pickupLocation = await kakaoService.searchAddress(pickupAddress);
+        if (pickupLocation) {
+          finalPickupLat = pickupLocation.lat;
+          finalPickupLng = pickupLocation.lng;
+          finalPickupAddress = pickupLocation.address;
         }
-        const centerLat = 37.5665;
-        const centerLng = 126.978;
-        const seed1 = Math.abs(hash % 10000) / 10000;
-        const seed2 = Math.abs((hash >> 16) % 10000) / 10000;
-        return {
-          address: address,
-          latitude: centerLat + (seed1 - 0.5) * 0.1,
-          longitude: centerLng + (seed2 - 0.5) * 0.1,
-        };
-      };
+      }
 
-      let pickupLocation = await naverService.searchAddress(pickupAddress);
-      let dropoffLocation = await naverService.searchAddress(dropoffAddress);
-      let returnLocation = await naverService.searchAddress(returnAddress);
-      let homeLocation = await naverService.searchAddress(homeAddress);
+      if (!finalDropoffLat || !finalDropoffLng) {
+        const dropoffLocation = await kakaoService.searchAddress(dropoffAddress);
+        if (dropoffLocation) {
+          finalDropoffLat = dropoffLocation.lat;
+          finalDropoffLng = dropoffLocation.lng;
+          finalDropoffAddress = dropoffLocation.address;
+        }
+      }
 
-      // Naver API 실패 시 더미 좌표 사용
-      if (!pickupLocation) {
-        console.log('⚠️ Naver API 실패, 더미 좌표 사용: pickup');
-        pickupLocation = generateDummyCoordinates(pickupAddress);
+      if (!finalReturnLat || !finalReturnLng) {
+        const returnLocation = await kakaoService.searchAddress(returnAddress);
+        if (returnLocation) {
+          finalReturnLat = returnLocation.lat;
+          finalReturnLng = returnLocation.lng;
+          finalReturnAddress = returnLocation.address;
+        }
       }
-      if (!dropoffLocation) {
-        console.log('⚠️ Naver API 실패, 더미 좌표 사용: dropoff');
-        dropoffLocation = generateDummyCoordinates(dropoffAddress);
+
+      if (!finalHomeLat || !finalHomeLng) {
+        const homeLocation = await kakaoService.searchAddress(homeAddress);
+        if (homeLocation) {
+          finalHomeLat = homeLocation.lat;
+          finalHomeLng = homeLocation.lng;
+          finalHomeAddress = homeLocation.address;
+        }
       }
-      if (!returnLocation) {
-        console.log('⚠️ Naver API 실패, 더미 좌표 사용: return');
-        returnLocation = generateDummyCoordinates(returnAddress);
-      }
-      if (!homeLocation) {
-        console.log('⚠️ Naver API 실패, 더미 좌표 사용: home');
-        homeLocation = generateDummyCoordinates(homeAddress);
+
+      // 디버깅 로그
+      console.log('📍 주소 및 좌표 정보:');
+      console.log('  - Pickup:', finalPickupAddress, `(${finalPickupLat}, ${finalPickupLng})`);
+      console.log('  - Dropoff:', finalDropoffAddress, `(${finalDropoffLat}, ${finalDropoffLng})`);
+      console.log('  - Return:', finalReturnAddress, `(${finalReturnLat}, ${finalReturnLng})`);
+      console.log('  - Home:', finalHomeAddress, `(${finalHomeLat}, ${finalHomeLng})`);
+
+      // 최소한 주소는 있어야 함
+      if (!finalPickupAddress || !finalDropoffAddress || !finalReturnAddress || !finalHomeAddress) {
+        console.error('❌ 주소 누락:', {
+          pickup: !!finalPickupAddress,
+          dropoff: !!finalDropoffAddress,
+          return: !!finalReturnAddress,
+          home: !!finalHomeAddress
+        });
+        return res.status(400).json({
+          success: false,
+          error: '주소 정보가 필요합니다. 모든 주소를 입력해주세요.',
+        });
       }
 
       // RideRequest 생성
       const request = await prisma.rideRequest.create({
         data: {
-          customerId,
-          pickupAddress: pickupLocation.address,
-          pickupLat: pickupLocation.latitude,
-          pickupLng: pickupLocation.longitude,
+          customerId: user.id,
+          pickupAddress: finalPickupAddress,
+          pickupLat: finalPickupLat || 0,
+          pickupLng: finalPickupLng || 0,
           desiredPickupTime: new Date(desiredPickupTime),
-          dropoffAddress: dropoffLocation.address,
-          dropoffLat: dropoffLocation.latitude,
-          dropoffLng: dropoffLocation.longitude,
-          returnAddress: returnLocation.address,
-          returnLat: returnLocation.latitude,
-          returnLng: returnLocation.longitude,
+          dropoffAddress: finalDropoffAddress,
+          dropoffLat: finalDropoffLat || 0,
+          dropoffLng: finalDropoffLng || 0,
+          returnAddress: finalReturnAddress,
+          returnLat: finalReturnLat || 0,
+          returnLng: finalReturnLng || 0,
           desiredReturnTime: new Date(desiredReturnTime),
-          homeAddress: homeLocation.address,
-          homeLat: homeLocation.latitude,
-          homeLng: homeLocation.longitude,
+          homeAddress: finalHomeAddress,
+          homeLat: finalHomeLat || 0,
+          homeLng: finalHomeLng || 0,
           passengerCount: passengerCount || 1,
           specialRequests,
           status: 'REQUESTED',
@@ -108,10 +153,15 @@ export class RideController {
 
       console.log(`✅ 예약 요청 생성: ${request.id}`);
 
-      // 🚀 즉시 매칭 실행 (비동기로 백그라운드 실행)
-      matchingService.runMatchingBatch().catch((err) => {
-        console.error('⚠️ 즉시 매칭 실패:', err);
-      });
+      // 즉시 매칭 실행 (테스트용 - 1명이라도 바로 매칭)
+      setTimeout(async () => {
+        try {
+          await matchingService.runMatchingBatch();
+          console.log('📨 자동 매칭 완료');
+        } catch (error) {
+          console.error('자동 매칭 실패:', error);
+        }
+      }, 1000);
 
       res.json({
         success: true,
