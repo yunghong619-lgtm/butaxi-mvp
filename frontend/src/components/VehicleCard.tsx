@@ -1,4 +1,6 @@
-// 간단하고 확실한 차량 카드 컴포넌트
+import { useState } from 'react';
+
+// 실제 스타리아 이미지를 사용하는 차량 카드 컴포넌트
 interface VehicleCardProps {
   vehicle?: {
     name?: string;
@@ -9,49 +11,52 @@ interface VehicleCardProps {
   showDetails?: boolean;
 }
 
-export default function VehicleCard({ 
-  vehicle, 
+export default function VehicleCard({
+  vehicle,
   size = 'medium',
-  showDetails = true 
+  showDetails = true
 }: VehicleCardProps) {
-  const vehicleName = vehicle?.name || '스타리아 1호';
+  const [imageError, setImageError] = useState(false);
+
+  const vehicleName = vehicle?.name || '스타리아 라운지';
   const licensePlate = vehicle?.licensePlate || '12가3456';
   const capacity = vehicle?.capacity || 7;
 
   // 크기별 클래스
   const sizeClasses = {
-    small: 'w-16 h-16',
-    medium: 'w-20 h-20',
-    large: 'w-24 h-24'
+    small: 'w-20 h-16',
+    medium: 'w-28 h-22',
+    large: 'w-36 h-28'
   };
 
   return (
     <div className="flex items-center gap-4">
-      {/* 세련된 차량 아이콘 - 우버/테슬라 스타일 */}
-      <div className={`${sizeClasses[size]} bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg flex items-center justify-center p-3 relative overflow-hidden group`}>
-        {/* 배경 그라디언트 효과 */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 group-hover:from-blue-500/20 group-hover:to-purple-500/20 transition-all duration-300"></div>
-        
-        {/* 미니밴 SVG 아이콘 - 모던하고 깔끔 */}
-        <svg viewBox="0 0 120 60" className="w-full h-full relative z-10" fill="none">
-          {/* 차체 실루엣 */}
-          <path
-            d="M 20 35 L 25 22 L 40 20 L 80 20 L 95 22 L 100 35 L 100 42 L 20 42 Z"
-            fill="white"
-            opacity="0.9"
+      {/* 스타리아 실제 이미지 (투명 배경) */}
+      <div className={`${sizeClasses[size]} rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-2 shadow-md`}>
+        {!imageError ? (
+          <img
+            src="/images/staria-transparent.png"
+            alt="현대 스타리아"
+            className="w-full h-full object-contain drop-shadow-md"
+            onError={() => setImageError(true)}
           />
-          {/* 창문 */}
-          <rect x="30" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
-          <rect x="48" y="23" width="18" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
-          <rect x="70" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
-          {/* 바퀴 */}
-          <circle cx="35" cy="42" r="6" fill="white" opacity="0.9"/>
-          <circle cx="35" cy="42" r="3" fill="#1e293b" opacity="0.5"/>
-          <circle cx="85" cy="42" r="6" fill="white" opacity="0.9"/>
-          <circle cx="85" cy="42" r="3" fill="#1e293b" opacity="0.5"/>
-          {/* 하이라이트 */}
-          <path d="M 40 21 L 80 21" stroke="white" strokeWidth="1.5" opacity="0.4" strokeLinecap="round"/>
-        </svg>
+        ) : (
+          // Fallback: 깔끔한 미니밴 아이콘
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center p-2">
+            <svg viewBox="0 0 120 60" className="w-full h-full" fill="none">
+              <path
+                d="M 20 35 L 25 22 L 40 20 L 80 20 L 95 22 L 100 35 L 100 42 L 20 42 Z"
+                fill="white"
+                opacity="0.9"
+              />
+              <rect x="30" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+              <rect x="48" y="23" width="18" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+              <rect x="70" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+              <circle cx="35" cy="42" r="6" fill="white" opacity="0.9"/>
+              <circle cx="85" cy="42" r="6" fill="white" opacity="0.9"/>
+            </svg>
+          </div>
+        )}
       </div>
 
       {/* 차량 상세 정보 */}
