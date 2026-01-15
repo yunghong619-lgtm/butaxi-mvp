@@ -1,0 +1,31 @@
+services:
+  # Backend API
+  - type: web
+    name: butaxi-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: butaxi-db
+          property: connectionString
+
+  # Frontend Static Site
+  - type: web
+    name: butaxi-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+
+databases:
+  - name: butaxi-db
+    plan: free
