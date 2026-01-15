@@ -35,7 +35,7 @@ export default function VehicleCard({
       <div className={`${sizeClasses[size]} rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-2 shadow-md`}>
         {!imageError ? (
           <img
-            src="/images/staria-transparent.png"
+            src="/images/staria-single.png"
             alt="현대 스타리아"
             className="w-full h-full object-contain drop-shadow-md"
             onError={() => setImageError(true)}
