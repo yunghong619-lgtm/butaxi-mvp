@@ -40,17 +40,94 @@ export default function VehicleCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          // Fallback SVG - 깔끔한 차량 아이콘
-          <svg viewBox="0 0 64 32" className="w-full h-full text-gray-700" fill="currentColor">
-            {/* 차체 */}
-            <path d="M8 18 L12 12 L20 12 L24 18 L56 18 L60 22 L60 26 L4 26 L4 22 Z" opacity="0.3"/>
-            {/* 창문 */}
-            <rect x="14" y="13" width="8" height="4" rx="1" opacity="0.5"/>
-            {/* 바퀴 */}
-            <circle cx="14" cy="26" r="3" opacity="0.6"/>
-            <circle cx="50" cy="26" r="3" opacity="0.6"/>
+          // Staria SVG - 우버 스타일 정교한 디자인
+          <svg viewBox="0 0 240 120" className="w-full h-full" fill="none">
+            {/* 차체 메인 (박스형 바디) */}
+            <path
+              d="M 30 65 L 40 40 L 70 35 L 100 35 L 130 35 L 160 35 L 200 45 L 210 55 L 210 85 L 30 85 Z"
+              fill="#2D3748"
+              opacity="0.95"
+            />
+            
+            {/* 루프 (지붕) */}
+            <path
+              d="M 40 40 L 70 35 L 160 35 L 200 45 L 198 38 L 165 32 L 75 32 L 42 37 Z"
+              fill="#1A202C"
+              opacity="0.9"
+            />
+            
+            {/* 프론트 범퍼 */}
+            <path
+              d="M 200 45 L 210 55 L 215 60 L 215 75 L 210 80 L 210 85 L 200 85 L 200 75 Z"
+              fill="#4A5568"
+              opacity="0.85"
+            />
+            
+            {/* 창문 1 (운전석) */}
+            <path
+              d="M 45 42 L 65 37 L 88 37 L 88 60 L 75 63 L 50 63 Z"
+              fill="#90CDF4"
+              opacity="0.4"
+            />
+            
+            {/* 창문 2 (2열) */}
+            <rect
+              x="95"
+              y="37"
+              width="35"
+              height="26"
+              rx="2"
+              fill="#90CDF4"
+              opacity="0.35"
+            />
+            
+            {/* 창문 3 (3열) */}
+            <rect
+              x="135"
+              y="37"
+              width="30"
+              height="26"
+              rx="2"
+              fill="#90CDF4"
+              opacity="0.3"
+            />
+            
+            {/* 슬라이딩 도어 라인 */}
+            <line x1="92" y1="45" x2="92" y2="80" stroke="#1A202C" strokeWidth="1.5" opacity="0.6"/>
+            <line x1="132" y1="45" x2="132" y2="80" stroke="#1A202C" strokeWidth="1.5" opacity="0.6"/>
+            
+            {/* 사이드 미러 */}
+            <ellipse cx="42" cy="52" rx="4" ry="3" fill="#4A5568" opacity="0.8"/>
+            
             {/* 헤드라이트 */}
-            <circle cx="58" cy="20" r="1.5" opacity="0.4"/>
+            <ellipse cx="206" cy="58" rx="5" ry="6" fill="#FBD38D" opacity="0.7"/>
+            
+            {/* 테일라이트 */}
+            <rect x="32" y="70" width="6" height="10" rx="1" fill="#FC8181" opacity="0.6"/>
+            
+            {/* 앞바퀴 */}
+            <g>
+              <circle cx="65" cy="85" r="12" fill="#2D3748" opacity="0.9"/>
+              <circle cx="65" cy="85" r="8" fill="#4A5568" opacity="0.7"/>
+              <circle cx="65" cy="85" r="4" fill="#718096" opacity="0.5"/>
+            </g>
+            
+            {/* 뒷바퀴 */}
+            <g>
+              <circle cx="185" cy="85" r="12" fill="#2D3748" opacity="0.9"/>
+              <circle cx="185" cy="85" r="8" fill="#4A5568" opacity="0.7"/>
+              <circle cx="185" cy="85" r="4" fill="#718096" opacity="0.5"/>
+            </g>
+            
+            {/* 하이라이트 (입체감) */}
+            <path
+              d="M 70 38 L 160 38 L 158 40 L 72 40 Z"
+              fill="white"
+              opacity="0.15"
+            />
+            
+            {/* 현대 로고 위치 (간단한 H) */}
+            <text x="205" y="52" fontSize="8" fill="white" opacity="0.3" fontWeight="bold">H</text>
           </svg>
         )}
       </div>
