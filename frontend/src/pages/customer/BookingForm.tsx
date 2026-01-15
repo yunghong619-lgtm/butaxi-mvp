@@ -46,6 +46,20 @@ export default function BookingForm() {
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
+    
+    // 디버깅: 전송 전 데이터 확인
+    console.log('📤 예약 요청 데이터:', {
+      customerId,
+      pickupAddress: formData.pickupAddress,
+      pickupCoords: `(${formData.pickupLat}, ${formData.pickupLng})`,
+      dropoffAddress: formData.dropoffAddress,
+      dropoffCoords: `(${formData.dropoffLat}, ${formData.dropoffLng})`,
+      returnAddress: formData.returnAddress,
+      returnCoords: `(${formData.returnLat}, ${formData.returnLng})`,
+      homeAddress: formData.homeAddress,
+      homeCoords: `(${formData.homeLat}, ${formData.homeLng})`,
+    });
+    
     try {
       const response: any = await rideApi.createRequest({
         customerId,
@@ -56,13 +70,15 @@ export default function BookingForm() {
         alert('✅ 예약 요청이 접수되었습니다!\n\n예약번호: ' + response.data.id.slice(0, 8) + '\n\n매칭 시스템이 최적의 경로를 찾고 있습니다.');
         navigate('/customer');
       } else {
-        setError('예약 요청에 실패했습니다. 다시 시도해주세요.');
+        const errorMsg = response.error || '예약 요청에 실패했습니다. 다시 시도해주세요.';
+        setError(errorMsg);
+        alert(`❌ 예약 실패\n\n${errorMsg}`);
       }
     } catch (err: any) {
       console.error('예약 요청 실패:', err);
-      const errorMessage = err.response?.data?.message || err.message || '예약 요청 중 오류가 발생했습니다.';
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || '예약 요청 중 오류가 발생했습니다.';
       setError(errorMessage);
-      alert(`❌ ${errorMessage}\n\n백엔드 서버가 실행 중인지 확인해주세요.`);
+      alert(`❌ 예약 실패\n\n${errorMessage}\n\n백엔드 서버 상태를 확인해주세요.`);
     } finally {
       setLoading(false);
     }
