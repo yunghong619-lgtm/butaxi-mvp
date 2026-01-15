@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 // 환경에 따라 백엔드 URL 설정
-const getBaseURL = () => {
-  // Vite 환경변수 또는 프로덕션 URL
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  // 프로덕션 (Render 배포)
-  if (import.meta.env.PROD) {
-    return 'https://butaxi-backend.onrender.com/api';
+const getBaseURL = (): string => {
+  // 브라우저 환경에서 호스트명으로 판단
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // Render 배포 환경
+    if (hostname.includes('onrender.com') || hostname.includes('butaxi')) {
+      return 'https://butaxi-backend.onrender.com/api';
+    }
   }
   // 개발 환경
   return 'http://localhost:3000/api';
