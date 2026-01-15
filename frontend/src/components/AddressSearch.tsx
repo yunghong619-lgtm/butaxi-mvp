@@ -8,28 +8,53 @@ interface AddressSearchProps {
   label?: string;
 }
 
-// 주소 문자열에서 더미 좌표 생성 (서울 지역 기준)
-const generateDummyCoordinates = (address: string): { lat: number; lng: number } => {
-  // 주소 문자열을 해시하여 시드값 생성
+// 네이버 Geocode API로 주소에서 좌표 얻기
+const geocodeAddress = (address: string): Promise<{ lat: number; lng: number } | null> => {
+  return new Promise((resolve) => {
+    if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+      console.error('Naver Maps Service not loaded');
+      resolve(null);
+      return;
+    }
+
+    window.naver.maps.Service.geocode(
+      { query: address },
+      (status: any, response: any) => {
+        if (status !== window.naver.maps.Service.Status.OK) {
+          console.error('Geocode 실패:', status);
+          resolve(null);
+          return;
+        }
+
+        if (response.v2.addresses && response.v2.addresses.length > 0) {
+          const addr = response.v2.addresses[0];
+          resolve({
+            lat: parseFloat(addr.y),
+            lng: parseFloat(addr.x),
+          });
+        } else {
+          resolve(null);
+        }
+      }
+    );
+  });
+};
+
+// Fallback: 더미 좌표 생성 (Geocode 실패 시)
+const generateFallbackCoordinates = (address: string): { lat: number; lng: number } => {
   let hash = 0;
   for (let i = 0; i < address.length; i++) {
     hash = ((hash << 5) - hash) + address.charCodeAt(i);
-    hash = hash & hash; // 32비트 정수로 변환
+    hash = hash & hash;
   }
-  
-  // 서울 중심부 기준 (37.5665, 126.978)
-  // ±0.05도 범위 내에서 랜덤 좌표 생성 (약 5km 반경)
   const centerLat = 37.5665;
   const centerLng = 126.978;
-  
-  // 해시값을 0~1 범위로 정규화
   const seed1 = Math.abs(hash % 10000) / 10000;
   const seed2 = Math.abs((hash >> 16) % 10000) / 10000;
-  
-  const lat = centerLat + (seed1 - 0.5) * 0.1; // ±0.05도
-  const lng = centerLng + (seed2 - 0.5) * 0.1; // ±0.05도
-  
-  return { lat, lng };
+  return {
+    lat: centerLat + (seed1 - 0.5) * 0.1,
+    lng: centerLng + (seed2 - 0.5) * 0.1,
+  };
 };
 
 // Daum Postcode 타입 정의
@@ -53,6 +78,7 @@ declare global {
         embed: (element: HTMLElement) => void;
       };
     };
+    naver: any;
   }
 }
 
@@ -81,17 +107,23 @@ export default function AddressSearch({
     }
 
     new window.daum.Postcode({
-      oncomplete: function(data) {
+      oncomplete: async function(data) {
         // 도로명 주소가 있으면 도로명, 없으면 지번 주소
         const fullAddress = data.roadAddress || data.jibunAddress;
         const extraAddress = data.buildingName ? ` (${data.buildingName})` : '';
         const finalAddress = fullAddress + extraAddress;
-        
-        // 더미 좌표 생성
-        const { lat, lng } = generateDummyCoordinates(fullAddress);
-        
+
         setInternalValue(finalAddress);
-        onChange(finalAddress, lat, lng);
+
+        // 네이버 Geocode API로 실제 좌표 획득
+        const coords = await geocodeAddress(fullAddress);
+        if (coords) {
+          onChange(finalAddress, coords.lat, coords.lng);
+        } else {
+          // Fallback: 더미 좌표 사용
+          const fallback = generateFallbackCoordinates(fullAddress);
+          onChange(finalAddress, fallback.lat, fallback.lng);
+        }
       },
       width: '100%',
       height: '100%',
@@ -108,10 +140,17 @@ export default function AddressSearch({
     // 수동 입력 시에는 onChange를 즉시 호출하지 않음
   };
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     if (internalValue.trim()) {
-      const { lat, lng } = generateDummyCoordinates(internalValue);
-      onChange(internalValue, lat, lng);
+      // 네이버 Geocode API로 실제 좌표 획득
+      const coords = await geocodeAddress(internalValue);
+      if (coords) {
+        onChange(internalValue, coords.lat, coords.lng);
+      } else {
+        // Fallback: 더미 좌표 사용
+        const fallback = generateFallbackCoordinates(internalValue);
+        onChange(internalValue, fallback.lat, fallback.lng);
+      }
     }
   };
 
@@ -128,7 +167,7 @@ export default function AddressSearch({
 
     // 브라우저 지원 여부 확인
     if (!navigator.geolocation) {
-      alert('❌ 브라우저에서 위치 정보를 지원하지 않습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.');
+      alert('브라우저에서 위치 정보를 지원하지 않습니다.\n\n대신 "주소 찾기" 버튼을 이용해주세요.');
       setIsLoadingLocation(false);
       return;
     }
@@ -138,21 +177,21 @@ export default function AddressSearch({
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
-        console.log('✅ 현재 위치:', lat, lng);
-        
+
+        console.log('현재 위치:', lat, lng);
+
         // 현재 위치 저장
         setCurrentLocation({ lat, lng });
-        
+
         // LocationMapModal 열기 (현재 위치로)
         setIsMapModalOpen(true);
         setIsLoadingLocation(false);
       },
       (error) => {
-        console.error('❌ 위치 정보 가져오기 실패:', error);
+        console.error('위치 정보 가져오기 실패:', error);
 
         // 위치 정보 실패 시 기본 위치(서울)로 지도 열기
-        console.log('📍 기본 위치(서울)로 지도를 엽니다.');
+        console.log('기본 위치(서울)로 지도를 엽니다.');
         setCurrentLocation({ lat: 37.5665, lng: 126.9780 });
         setIsMapModalOpen(true);
         setIsLoadingLocation(false);
@@ -179,7 +218,7 @@ export default function AddressSearch({
           {label}
         </label>
       )}
-      
+
       {/* 주소 입력 필드 */}
       <div className="w-full relative group mb-3">
         <input
@@ -190,7 +229,7 @@ export default function AddressSearch({
           placeholder={placeholder}
           className="w-full px-4 md:px-5 py-3 md:py-4 pr-10 md:pr-12 text-sm md:text-base border-2 border-gray-200 rounded-2xl focus:border-black focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md"
         />
-        
+
         {/* Clear 버튼 */}
         {internalValue && (
           <button
@@ -224,7 +263,7 @@ export default function AddressSearch({
           onClick={handleSearchAddress}
           className="flex-1 px-4 md:px-6 py-3 md:py-4 bg-black text-white rounded-2xl text-sm md:text-base font-semibold hover:bg-gray-900 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
         >
-          🔍 주소 찾기
+          주소 찾기
         </button>
 
         {/* 현위치 버튼 */}
@@ -254,7 +293,7 @@ export default function AddressSearch({
 
       {/* 도움말 */}
       <p className="text-xs text-gray-500 px-1">
-        💡 주소 찾기 버튼을 클릭하거나, 현위치 버튼으로 지도에서 선택하거나, 직접 입력 후 Enter를 눌러주세요
+        주소 찾기 버튼을 클릭하거나, 현위치 버튼으로 지도에서 선택하거나, 직접 입력 후 Enter를 눌러주세요
       </p>
 
       {/* LocationMapModal */}

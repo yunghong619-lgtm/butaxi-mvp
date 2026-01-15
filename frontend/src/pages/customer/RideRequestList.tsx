@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { rideApi } from '../../services/api';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import ProgressStepper from '../../components/ProgressStepper';
 
 export default function RideRequestList() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -103,6 +104,13 @@ export default function RideRequestList() {
                   #{request.id.slice(0, 8)}
                 </div>
               </div>
+
+              {/* Progress Stepper - 진행 중인 요청에만 표시 */}
+              {request.status !== 'CANCELLED' && request.status !== 'CONFIRMED' && (
+                <div className="mb-6">
+                  <ProgressStepper currentStatus={request.status} />
+                </div>
+              )}
 
               {/* 왕복 정보 */}
               <div className="grid md:grid-cols-2 gap-6">

@@ -1,131 +1,203 @@
+import { useState, useEffect } from 'react';
+
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    activeTrips: 0,
+    completedTrips: 0,
+    totalDrivers: 0,
+  });
+
+  useEffect(() => {
+    // MVP: 하드코딩된 통계 (추후 API 연동)
+    setStats({
+      totalRequests: 24,
+      activeTrips: 3,
+      completedTrips: 18,
+      totalDrivers: 5,
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-black mb-2">관리자 대시보드</h1>
-          <p className="text-gray-600">BUTAXI 시스템 전체 현황</p>
-        </div>
-
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100">
-            <p className="text-sm text-gray-500 mb-2">예약 요청</p>
-            <p className="text-3xl font-bold text-black">24</p>
-            <p className="text-xs text-gray-400 mt-1">이번 주</p>
+      {/* Header - 우버 스타일 */}
+      <div className="bg-black text-white p-6 pb-20">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-gray-400 text-sm">butaxi</p>
+            <h1 className="text-2xl font-bold">관리자 대시보드</h1>
           </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100">
-            <p className="text-sm text-gray-500 mb-2">매칭 성공률</p>
-            <p className="text-3xl font-bold text-black">85%</p>
-            <p className="text-xs text-gray-400 mt-1">평균</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100">
-            <p className="text-sm text-gray-500 mb-2">운행 중</p>
-            <p className="text-3xl font-bold text-black">3</p>
-            <p className="text-xs text-gray-400 mt-1">현재</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100">
-            <p className="text-sm text-gray-500 mb-2">평균 탑승률</p>
-            <p className="text-3xl font-bold text-black">72%</p>
-            <p className="text-xs text-gray-400 mt-1">차량당</p>
+          <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+            <span className="text-xl">👑</span>
           </div>
         </div>
+        <p className="text-gray-300">시스템 전체 현황을 확인하세요</p>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 mb-8">
-          <h2 className="text-xl font-bold text-black mb-6">빠른 작업</h2>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <button className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+      {/* KPI Cards - 우버 스타일 */}
+      <div className="px-4 -mt-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-white rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <span className="text-xl">📋</span>
               </div>
-              <h3 className="font-semibold text-black mb-1">수동 매칭 실행</h3>
-              <p className="text-sm text-gray-600">대기 중인 요청 매칭</p>
-            </button>
+              <span className="text-xs text-green-500 font-bold">+12%</span>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalRequests}</p>
+            <p className="text-xs text-gray-500">이번 주 예약</p>
+          </div>
 
-            <button className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+          <div className="bg-white rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <span className="text-xl">🚗</span>
               </div>
-              <h3 className="font-semibold text-black mb-1">차량 관리</h3>
-              <p className="text-sm text-gray-600">등록 및 상태 관리</p>
-            </button>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+            <p className="text-2xl font-bold">{stats.activeTrips}</p>
+            <p className="text-xs text-gray-500">운행 중</p>
+          </div>
 
-            <button className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+          <div className="bg-white rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <span className="text-xl">✅</span>
               </div>
-              <h3 className="font-semibold text-black mb-1">통계 보고서</h3>
-              <p className="text-sm text-gray-600">상세 분석 리포트</p>
-            </button>
+            </div>
+            <p className="text-2xl font-bold">{stats.completedTrips}</p>
+            <p className="text-xs text-gray-500">완료된 운행</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <span className="text-xl">👨‍✈️</span>
+              </div>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalDrivers}</p>
+            <p className="text-xs text-gray-500">등록 기사</p>
           </div>
         </div>
+      </div>
 
-        {/* System Status */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-black mb-6">시스템 상태</h2>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium text-black">백엔드 서버</span>
-              </div>
-              <span className="text-sm text-gray-600">정상</span>
+      {/* Quick Actions */}
+      <div className="p-4 mt-6">
+        <h2 className="text-lg font-bold mb-4">빠른 작업</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all text-left group">
+            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <span className="text-2xl">🔄</span>
             </div>
+            <h3 className="font-bold mb-1">수동 매칭</h3>
+            <p className="text-sm text-gray-500">대기 요청을 즉시 매칭</p>
+          </button>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium text-black">매칭 엔진</span>
-              </div>
-              <span className="text-sm text-gray-600">정상 (10분마다)</span>
+          <button className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all text-left group">
+            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <span className="text-2xl">🚗</span>
             </div>
+            <h3 className="font-bold mb-1">차량 관리</h3>
+            <p className="text-sm text-gray-500">차량 등록 및 상태</p>
+          </button>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium text-black">데이터베이스</span>
-              </div>
-              <span className="text-sm text-gray-600">정상</span>
+          <button className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all text-left group">
+            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <span className="text-2xl">📊</span>
             </div>
+            <h3 className="font-bold mb-1">통계 보고서</h3>
+            <p className="text-sm text-gray-500">상세 분석 리포트</p>
+          </button>
+        </div>
+      </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="font-medium text-black">Kakao Maps API</span>
+      {/* System Status */}
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4">시스템 상태</h2>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            <StatusItem
+              name="백엔드 서버"
+              status="정상"
+              color="green"
+            />
+            <StatusItem
+              name="매칭 엔진"
+              status="10분마다 실행"
+              color="green"
+            />
+            <StatusItem
+              name="데이터베이스"
+              status="SQLite (개발)"
+              color="green"
+            />
+            <StatusItem
+              name="SMS 서비스"
+              status="SOLAPI 연동"
+              color="green"
+            />
+            <StatusItem
+              name="지도 API"
+              status="네이버 지도"
+              color="green"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* MVP Notice */}
+      <div className="p-4">
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-5 border border-yellow-200">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-xl">📌</span>
+            </div>
+            <div>
+              <h3 className="font-bold text-yellow-900 mb-2">MVP 버전</h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                현재 MVP 단계로 일부 기능이 제한됩니다.
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <span className="w-4 h-4 bg-yellow-300 rounded flex items-center justify-center">✓</span>
+                  Mock 결제
+                </div>
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <span className="w-4 h-4 bg-yellow-300 rounded flex items-center justify-center">✓</span>
+                  단순 매칭
+                </div>
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <span className="w-4 h-4 bg-yellow-300 rounded flex items-center justify-center">✓</span>
+                  SMS 알림
+                </div>
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <span className="w-4 h-4 bg-yellow-300 rounded flex items-center justify-center">✓</span>
+                  SQLite DB
+                </div>
               </div>
-              <span className="text-sm text-gray-600">대기 중</span>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// 상태 아이템 컴포넌트
+function StatusItem({ name, status, color }: { name: string; status: string; color: 'green' | 'yellow' | 'red' }) {
+  const colors = {
+    green: 'bg-green-500',
+    yellow: 'bg-yellow-500',
+    red: 'bg-red-500',
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4">
+      <div className="flex items-center gap-3">
+        <div className={`w-2 h-2 ${colors[color]} rounded-full animate-pulse`}></div>
+        <span className="font-medium">{name}</span>
+      </div>
+      <span className="text-sm text-gray-500">{status}</span>
     </div>
   );
 }

@@ -43,7 +43,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
   const onError = useCallback((error: GeolocationPositionError) => {
     let errorMessage = '위치 정보를 가져올 수 없습니다.';
-    
+
     switch (error.code) {
       case error.PERMISSION_DENIED:
         errorMessage = '위치 권한이 거부되었습니다.';
@@ -77,7 +77,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     }
 
     setState(prev => ({ ...prev, loading: true }));
-    
+
     navigator.geolocation.getCurrentPosition(onSuccess, onError, {
       enableHighAccuracy,
       timeout,

@@ -116,7 +116,7 @@ export default function LocationMapModal({
     }
   };
 
-  // Reverse Geocoding (좌표 → 주소) - Naver Web JS 사용
+  // Reverse Geocoding (좌표 -> 주소) - Naver Web JS 사용
   const reverseGeocode = async (lat: number, lng: number) => {
     if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
       console.error('Naver Maps Service not loaded');
@@ -171,7 +171,7 @@ export default function LocationMapModal({
 
     const initializeMap = () => {
       if (!window.naver || !window.naver.maps) {
-        console.error('❌ Naver Maps SDK가 로드되지 않았습니다.');
+        console.error('Naver Maps SDK가 로드되지 않았습니다.');
         setError('지도를 로드할 수 없습니다.\n\n페이지를 새로고침해주세요.');
         setMapLoading(false);
         return;
@@ -196,7 +196,7 @@ export default function LocationMapModal({
           },
         };
 
-        console.log('✅ Naver Map 초기화 중...', { initialLat, initialLng });
+        console.log('Naver Map 초기화 중...', { initialLat, initialLng });
         const mapInstance = new naver.maps.Map(container, mapOptions);
         setMap(mapInstance);
         setMapLoading(false);
@@ -226,7 +226,7 @@ export default function LocationMapModal({
         // 초기 주소 가져오기
         reverseGeocode(initialLat, initialLng);
       } catch (error) {
-        console.error('❌ 지도 초기화 실패:', error);
+        console.error('지도 초기화 실패:', error);
         setError('지도 초기화에 실패했습니다.\n\n페이지를 새로고침해주세요.');
         setMapLoading(false);
       }
@@ -237,8 +237,8 @@ export default function LocationMapModal({
   }, [isOpen, initialLat, initialLng]);
 
   const handleConfirm = () => {
-    if (selectedAddress && 
-        selectedAddress !== '위치를 가져오는 중...' && 
+    if (selectedAddress &&
+        selectedAddress !== '위치를 가져오는 중...' &&
         !selectedAddress.includes('로드할 수 없습니다') &&
         !selectedAddress.includes('초기화 실패')) {
       onSelectLocation(selectedAddress, selectedLat, selectedLng);
@@ -308,7 +308,7 @@ export default function LocationMapModal({
                   className="fixed inset-0 z-10"
                   onClick={() => setShowSearchResults(false)}
                 />
-                
+
                 <div className="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                   {searchLoading ? (
                     <div className="p-4 text-center text-gray-500 text-sm">
@@ -352,8 +352,8 @@ export default function LocationMapModal({
 
         {/* Map Container */}
         <div className="relative" style={{ height: '400px' }}>
-          <div 
-            ref={mapRef} 
+          <div
+            ref={mapRef}
             className="w-full h-full bg-gray-100"
             style={{ minHeight: '400px' }}
           />
@@ -420,7 +420,7 @@ export default function LocationMapModal({
         {/* Help Text */}
         <div className="px-6 pb-6">
           <p className="text-xs text-gray-500 text-center">
-            💡 주소를 검색하거나 지도를 클릭하여 위치를 선택할 수 있습니다
+            주소를 검색하거나 지도를 클릭하여 위치를 선택할 수 있습니다
           </p>
         </div>
       </div>
