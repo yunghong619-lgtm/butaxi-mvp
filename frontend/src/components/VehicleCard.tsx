@@ -27,12 +27,31 @@ export default function VehicleCard({
 
   return (
     <div className="flex items-center gap-4">
-      {/* 차량 아이콘 - 간단하고 확실한 방법 */}
-      <div className={`${sizeClasses[size]} bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-md flex items-center justify-center p-2 border border-blue-100`}>
-        <div className="text-center">
-          <div className="text-4xl mb-1">🚐</div>
-          <div className="text-[8px] font-bold text-gray-600 whitespace-nowrap">STARIA</div>
-        </div>
+      {/* 세련된 차량 아이콘 - 우버/테슬라 스타일 */}
+      <div className={`${sizeClasses[size]} bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg flex items-center justify-center p-3 relative overflow-hidden group`}>
+        {/* 배경 그라디언트 효과 */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 group-hover:from-blue-500/20 group-hover:to-purple-500/20 transition-all duration-300"></div>
+        
+        {/* 미니밴 SVG 아이콘 - 모던하고 깔끔 */}
+        <svg viewBox="0 0 120 60" className="w-full h-full relative z-10" fill="none">
+          {/* 차체 실루엣 */}
+          <path
+            d="M 20 35 L 25 22 L 40 20 L 80 20 L 95 22 L 100 35 L 100 42 L 20 42 Z"
+            fill="white"
+            opacity="0.9"
+          />
+          {/* 창문 */}
+          <rect x="30" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+          <rect x="48" y="23" width="18" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+          <rect x="70" y="23" width="15" height="10" rx="2" fill="#1e293b" opacity="0.3"/>
+          {/* 바퀴 */}
+          <circle cx="35" cy="42" r="6" fill="white" opacity="0.9"/>
+          <circle cx="35" cy="42" r="3" fill="#1e293b" opacity="0.5"/>
+          <circle cx="85" cy="42" r="6" fill="white" opacity="0.9"/>
+          <circle cx="85" cy="42" r="3" fill="#1e293b" opacity="0.5"/>
+          {/* 하이라이트 */}
+          <path d="M 40 21 L 80 21" stroke="white" strokeWidth="1.5" opacity="0.4" strokeLinecap="round"/>
+        </svg>
       </div>
 
       {/* 차량 상세 정보 */}

@@ -177,49 +177,6 @@ export class TripController {
       });
     }
   }
-
-  /**
-   * 드라이버 현재 위치 업데이트
-   */
-  async updateDriverLocation(req: Request, res: Response) {
-    try {
-      const { tripId } = req.params;
-      const { latitude, longitude } = req.body;
-
-      if (!latitude || !longitude) {
-        return res.status(400).json({
-          success: false,
-          error: '위도와 경도가 필요합니다.',
-        });
-      }
-
-      const trip = await prisma.trip.update({
-        where: { id: tripId },
-        data: {
-          currentLat: latitude,
-          currentLng: longitude,
-          lastLocationUpdate: new Date(),
-        },
-      });
-
-      res.json({
-        success: true,
-        data: {
-          tripId: trip.id,
-          currentLat: trip.currentLat,
-          currentLng: trip.currentLng,
-          lastLocationUpdate: trip.lastLocationUpdate,
-        },
-        message: '위치가 업데이트되었습니다.',
-      });
-    } catch (error) {
-      console.error('위치 업데이트 실패:', error);
-      res.status(500).json({
-        success: false,
-        error: '위치 업데이트 중 오류가 발생했습니다.',
-      });
-    }
-  }
 }
 
 export const tripController = new TripController();

@@ -12,14 +12,17 @@ export class ProposalController {
     try {
       const { customerId } = req.params;
 
-      console.log(`📋 Proposal 조회 요청: customerId=${customerId}`);
-
       const proposals = await prisma.proposal.findMany({
         where: {
           request: {
             customerId,
           },
-          status: 'ACTIVE', // ACTIVE 상태만 조회 (만료된 것 제외)
+          // 모든 상태의 제안 표시 (ACTIVE, PENDING, ACCEPTED)
+          OR: [
+            { status: 'ACTIVE' },
+            { status: 'PENDING' },
+            { status: 'ACCEPTED' },
+          ],
         },
         include: {
           request: true,
@@ -31,7 +34,6 @@ export class ProposalController {
                   id: true,
                   name: true,
                   phone: true,
-                  email: true,
                 },
               },
             },
@@ -44,7 +46,6 @@ export class ProposalController {
                   id: true,
                   name: true,
                   phone: true,
-                  email: true,
                 },
               },
             },
@@ -55,23 +56,18 @@ export class ProposalController {
         },
       });
 
-      console.log(`✅ Proposal ${proposals.length}개 조회됨`);
-      
-      // 만료 체크 (추가 필터링)
+      // 만료 여부 체크 및 필터링 (ACCEPTED는 항상 표시, 나머지는 만료 전만)
       const now = new Date();
-      const validProposals = proposals.filter(p => new Date(p.expiresAt) > now);
-
-      if (validProposals.length < proposals.length) {
-        console.log(`⚠️ 만료된 Proposal ${proposals.length - validProposals.length}개 제외`);
-      }
+      const validProposals = proposals.filter(p =>
+        p.status === 'ACCEPTED' || new Date(p.expiresAt) > now
+      );
 
       res.json({
         success: true,
         data: validProposals,
-        count: validProposals.length,
       });
     } catch (error) {
-      console.error('❌ Proposal 조회 실패:', error);
+      console.error('Proposal 조회 실패:', error);
       res.status(500).json({
         success: false,
         error: '조회 중 오류가 발생했습니다.',
@@ -97,32 +93,6 @@ export class ProposalController {
                   name: true,
                   email: true,
                   phone: true,
-                },
-              },
-            },
-          },
-          outboundTrip: {
-            include: {
-              vehicle: true,
-              driver: {
-                select: {
-                  id: true,
-                  name: true,
-                  phone: true,
-                  email: true,
-                },
-              },
-            },
-          },
-          returnTrip: {
-            include: {
-              vehicle: true,
-              driver: {
-                select: {
-                  id: true,
-                  name: true,
-                  phone: true,
-                  email: true,
                 },
               },
             },

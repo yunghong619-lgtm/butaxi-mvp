@@ -8,9 +8,134 @@ const prisma = new PrismaClient();
 
 export class ProposalService {
   /**
-   * ⚠️ 참고: 실제 Proposal 생성은 matching.service.ts에서 처리됩니다.
-   * 이 서비스는 Proposal 관리 기능(수락, 만료 정리 등)만 담당합니다.
+   * Trip 기반으로 Proposal 생성
    */
+  async createProposalsForTrip(tripId: string): Promise<string[]> {
+    const trip = await prisma.trip.findUnique({
+      where: { id: tripId },
+      include: {
+        stops: {
+          orderBy: { sequence: 'asc' },
+        },
+      },
+    });
+
+    if (!trip) {
+      throw new Error('Trip을 찾을 수 없습니다.');
+    }
+
+    const proposalIds: string[] = [];
+
+    // 각 고객별로 Proposal 생성
+    const customerIds = new Set(trip.stops.map((s) => s.customerId).filter(Boolean));
+
+    console.log(`🔍 Trip ${tripId.slice(0,8)}의 고객 수: ${customerIds.size}개`);
+
+    for (const customerId of customerIds) {
+      if (!customerId) continue;
+
+      try {
+        // 먼저 고객의 RideRequest를 찾음 (REQUESTED 또는 방금 생성된 것)
+        const request = await prisma.rideRequest.findFirst({
+          where: {
+            customerId,
+            OR: [
+              { status: 'REQUESTED' },
+              { status: 'PROPOSED' }, // 이미 다른 방향으로 제안된 경우
+            ]
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        if (!request) {
+          console.warn(`⚠️ 고객 ${customerId}의 요청을 찾을 수 없습니다.`);
+          continue;
+        }
+
+        // 이미 이 Trip에 대한 Proposal이 있는지 확인
+        const existingProposal = await prisma.proposal.findFirst({
+          where: {
+            requestId: request.id,
+            OR: [
+              { outboundTripId: tripId },
+              { returnTripId: tripId },
+            ],
+          },
+        });
+
+        if (existingProposal) {
+          console.log(`⏭️ 이미 Proposal 존재: ${existingProposal.id.slice(0,8)}`);
+          continue;
+        }
+
+        // 실제 request.id를 전달
+        const proposal = await this.generateProposal(request.id, customerId, trip.id, trip.direction);
+        proposalIds.push(proposal.id);
+
+        // Request 상태 업데이트 (알림은 수락 시에만 발송)
+        await prisma.rideRequest.update({
+          where: { id: request.id },
+          data: { status: 'PROPOSED' },
+        });
+
+        console.log(`✅ Proposal 생성 완료 (알림 없음): ${proposal.id.slice(0,8)}`)
+      } catch (error) {
+        console.error(`Proposal 생성 실패 (고객 ${customerId}):`, error);
+      }
+    }
+
+    return proposalIds;
+  }
+
+  /**
+   * 개별 Proposal 생성
+   */
+  private async generateProposal(requestId: string, customerId: string, tripId: string, direction: string) {
+    // 해당 고객의 Stop 정보 가져오기
+    const pickupStop = await prisma.stop.findFirst({
+      where: {
+        tripId,
+        customerId,
+        stopType: 'PICKUP',
+      },
+    });
+
+    const dropoffStop = await prisma.stop.findFirst({
+      where: {
+        tripId,
+        customerId,
+        stopType: 'DROPOFF',
+      },
+    });
+
+    if (!pickupStop || !dropoffStop) {
+      throw new Error('Stop 정보를 찾을 수 없습니다.');
+    }
+
+    // 요금 계산 (거리 기반)
+    const distance = 10; // TODO: 실제 거리 계산
+    const price = paymentService.calculatePrice(distance, 1);
+
+    // Proposal 생성
+    const proposal = await prisma.proposal.create({
+      data: {
+        requestId: requestId,
+        status: 'ACTIVE',
+        outboundTripId: direction === 'OUTBOUND' ? tripId : null,
+        returnTripId: direction === 'RETURN' ? tripId : null,
+        pickupTime: pickupStop.scheduledTime,
+        dropoffTime: dropoffStop.scheduledTime,
+        returnPickupTime: pickupStop.scheduledTime, // TODO: 실제 귀가편 시간
+        returnDropoffTime: dropoffStop.scheduledTime,
+        estimatedPrice: price,
+        expiresAt: addMinutes(new Date(), config.policy.proposalExpiryMinutes),
+      },
+    });
+
+    console.log(`✅ Proposal 생성: ${proposal.id} (고객: ${customerId})`);
+
+    return proposal;
+  }
 
   /**
    * Proposal 수락 처리

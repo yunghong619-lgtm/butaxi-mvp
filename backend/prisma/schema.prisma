@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -94,24 +94,26 @@ model Trip {
   vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
   driverId   String?
   driver     User?    @relation("DriverTrips", fields: [driverId], references: [id])
-  
+
   direction  String   // OUTBOUND, RETURN
   status     String   @default("PLANNED") // PLANNED, READY, IN_PROGRESS, COMPLETED, CANCELLED
-  
+
   // 운행 시간
   startTime  DateTime
   endTime    DateTime
-  
+
   // 메타 정보
   totalDistance Float?     // km
   estimatedDuration Int?    // minutes
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   stops    Stop[]
   bookings Booking[]
+  outboundProposals Proposal[] @relation("OutboundProposals")
+  returnProposals   Proposal[] @relation("ReturnProposals")
 
   @@map("trips")
 }
@@ -150,25 +152,27 @@ model Proposal {
   id            String      @id @default(cuid())
   requestId     String
   request       RideRequest @relation(fields: [requestId], references: [id])
-  
+
   status        String      @default("ACTIVE") // ACTIVE, ACCEPTED, REJECTED, EXPIRED
-  
+
   // 가는 편 정보
   outboundTripId String?
+  outboundTrip   Trip?       @relation("OutboundProposals", fields: [outboundTripId], references: [id])
   pickupTime     DateTime
   dropoffTime    DateTime
-  
+
   // 귀가 편 정보
   returnTripId   String?
+  returnTrip     Trip?       @relation("ReturnProposals", fields: [returnTripId], references: [id])
   returnPickupTime  DateTime
   returnDropoffTime DateTime
-  
+
   // 가격
   estimatedPrice Float
-  
+
   // 유효 기간
   expiresAt DateTime
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -8,7 +8,17 @@
       "Bash(npm run dev:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(node:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(git checkout:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName\")",
+      "Bash(npx prisma db push:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

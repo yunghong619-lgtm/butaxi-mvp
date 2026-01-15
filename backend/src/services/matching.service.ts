@@ -1,13 +1,12 @@
 import { PrismaClient, RideRequest } from '@prisma/client';
-
-// TripDirection 타입 정의 (OUTBOUND: 가는편, RETURN: 귀가편)
-type TripDirection = 'OUTBOUND' | 'RETURN';
-import { addMinutes, subMinutes, isWithinInterval, format } from 'date-fns';
+import { addMinutes, subMinutes, isWithinInterval } from 'date-fns';
 import { config } from '../config';
-import { naverService } from './naver.service';
-import { smsService } from './sms.service';
+import { kakaoService } from './kakao.service';
+import { proposalService } from './proposal.service';
 
 const prisma = new PrismaClient();
+
+type TripDirection = 'OUTBOUND' | 'RETURN';
 
 interface MatchGroup {
   requests: RideRequest[];
@@ -78,19 +77,17 @@ export class MatchingService {
         // 시간 체크 (±30분 or ±45분)
         const isTimeMatch = isWithinInterval(rTime, { start: windowStart, end: windowEnd });
 
-        // 거리 체크 (config에서 설정한 반경 이내, 기본 10km)
-        const matchingRadius = config.policy.matchingRadiusKm || 10;
-        const isLocationMatch = naverService.isWithinRadius(
+        // 거리 체크 (반경 5km 이내)
+        const isLocationMatch = kakaoService.isWithinRadius(
           { lat: targetLat, lng: targetLng },
           { lat: rLat, lng: rLng },
-          matchingRadius
+          5 // 5km
         );
 
         return isTimeMatch && isLocationMatch;
       });
 
-      // ✅ 수정: 최소 2명 이상일 때만 그룹 생성 (합승 필수)
-      if (matchingRequests.length >= 2) {
+      if (matchingRequests.length > 0) {
         // 최대 4명까지만
         const limitedRequests = matchingRequests.slice(0, config.policy.maxPassengersPerTrip);
 
@@ -105,10 +102,6 @@ export class MatchingService {
 
         console.log(
           `✅ 그룹 생성: ${direction} - ${limitedRequests.length}명 (시간: ${targetTime.toLocaleString('ko-KR')})`
-        );
-      } else if (matchingRequests.length === 1) {
-        console.log(
-          `⏳ 매칭 대기 중: ${direction} - ${matchingRequests[0].id} (추가 요청 필요)`
         );
       }
     }
@@ -125,42 +118,23 @@ export class MatchingService {
     for (const group of groups) {
       try {
         // 차량 배정 (MVP: 첫 번째 활성 차량 사용)
-        let vehicle = await prisma.vehicle.findFirst({
+        const vehicle = await prisma.vehicle.findFirst({
           where: { isActive: true },
         });
 
-        // 차량이 없으면 자동 생성
         if (!vehicle) {
-          console.log('⚠️ 사용 가능한 차량이 없습니다. 자동 생성합니다...');
-          
-          // Driver 자동 생성
-          let driver = await prisma.user.findFirst({
-            where: { role: 'DRIVER' },
-          });
+          console.error('사용 가능한 차량이 없습니다.');
+          continue;
+        }
 
-          if (!driver) {
-            driver = await prisma.user.create({
-              data: {
-                id: `driver-auto-${Date.now()}`,
-                name: '자동 배정 기사',
-                email: `driver-auto-${Date.now()}@butaxi.com`,
-                phone: '010-0000-0000',
-                role: 'DRIVER',
-              },
-            });
-            console.log(`👤 Driver 자동 생성: ${driver.id}`);
-          }
+        // 드라이버 배정 (MVP: 첫 번째 활성 드라이버 사용)
+        const driver = await prisma.user.findFirst({
+          where: { role: 'DRIVER' },
+        });
 
-          // Vehicle 자동 생성
-          vehicle = await prisma.vehicle.create({
-            data: {
-              name: `자동배정차량-${Date.now().toString().slice(-4)}`,
-              licensePlate: `AUTO-${Date.now().toString().slice(-4)}`,
-              capacity: 4,
-              isActive: true,
-            },
-          });
-          console.log(`🚗 Vehicle 자동 생성: ${vehicle.id} (${vehicle.licensePlate})`);
+        if (!driver) {
+          console.error('사용 가능한 드라이버가 없습니다.');
+          continue;
         }
 
         // Stop 순서 최적화 (MVP: 단순 순서)
@@ -174,6 +148,7 @@ export class MatchingService {
         const trip = await prisma.trip.create({
           data: {
             vehicleId: vehicle.id,
+            driverId: driver.id,
             direction: group.direction,
             status: 'PLANNED',
             startTime,
@@ -187,78 +162,12 @@ export class MatchingService {
         createdTripIds.push(trip.id);
 
         console.log(`🚗 Trip 생성 완료: ${trip.id} (${group.direction}, ${group.requests.length}명)`);
-
-        // ✅ Proposal 생성 및 SMS 발송
-        await this.createProposalsForTrip(trip, group);
       } catch (error) {
         console.error('Trip 생성 실패:', error);
       }
     }
 
     return createdTripIds;
-  }
-
-  /**
-   * Trip에 대한 Proposal 생성 및 알림 발송
-   */
-  private async createProposalsForTrip(trip: any, group: MatchGroup): Promise<void> {
-    try {
-      for (const request of group.requests) {
-        // Proposal 생성
-        const proposal = await prisma.proposal.create({
-          data: {
-            requestId: request.id,
-            status: 'ACTIVE',
-            // 가는 편 정보
-            outboundTripId: group.direction === 'OUTBOUND' ? trip.id : null,
-            pickupTime: group.direction === 'OUTBOUND' ? trip.startTime : request.desiredPickupTime,
-            dropoffTime: group.direction === 'OUTBOUND' ? trip.endTime : request.desiredPickupTime,
-            // 귀가 편 정보
-            returnTripId: group.direction === 'RETURN' ? trip.id : null,
-            returnPickupTime: group.direction === 'RETURN' ? trip.startTime : request.desiredReturnTime,
-            returnDropoffTime: group.direction === 'RETURN' ? trip.endTime : request.desiredReturnTime,
-            // 가격 (임시)
-            estimatedPrice: 15000,
-            // 유효기간 (24시간 - 테스트용)
-            expiresAt: addMinutes(new Date(), 60 * 24),
-          },
-        });
-
-        // RideRequest 상태 업데이트
-        await prisma.rideRequest.update({
-          where: { id: request.id },
-          data: { status: 'PROPOSED' },
-        });
-
-        console.log(`💌 Proposal 생성: ${proposal.id} (Request: ${request.id})`);
-
-        // SMS 알림 발송
-        try {
-          const user = await prisma.user.findUnique({
-            where: { id: request.customerId },
-          });
-
-          if (user && user.phone) {
-            const pickupTimeStr = format(
-              group.direction === 'OUTBOUND' ? trip.startTime : request.desiredReturnTime,
-              'MM월 dd일 HH:mm'
-            );
-            await smsService.sendProposalNotification(
-              user.phone,
-              user.name,
-              pickupTimeStr,
-              15000
-            );
-            console.log(`📱 SMS 발송 완료: ${user.phone}`);
-          }
-        } catch (smsError) {
-          console.error('SMS 발송 실패:', smsError);
-          // SMS 실패해도 계속 진행
-        }
-      }
-    } catch (error) {
-      console.error('Proposal 생성 실패:', error);
-    }
   }
 
   /**
@@ -328,6 +237,16 @@ export class MatchingService {
     }
 
     const tripIds = await this.createTripsFromGroups(groups);
+
+    // Trip 생성 후 Proposal 자동 생성
+    for (const tripId of tripIds) {
+      try {
+        await proposalService.createProposalsForTrip(tripId);
+        console.log(`📨 Proposal 생성 완료: Trip ${tripId.slice(0, 8)}`);
+      } catch (error) {
+        console.error(`Proposal 생성 실패 (Trip ${tripId}):`, error);
+      }
+    }
 
     console.log(`✅ 매칭 배치 완료: ${tripIds.length}개 Trip 생성\n`);
   }
