@@ -4,6 +4,7 @@ import { proposalController } from '../controllers/proposal.controller';
 import { bookingController } from '../controllers/booking.controller';
 import { tripController } from '../controllers/trip.controller';
 import { customerController } from '../controllers/customer.controller';
+import { reviewController } from '../controllers/review.controller';
 
 const router = Router();
 
@@ -35,6 +36,11 @@ router.post('/trips/stops/:stopId/checkin', tripController.checkInStop.bind(trip
 router.post('/customers', customerController.findOrCreateCustomer.bind(customerController));
 router.get('/customers/phone/:phone', customerController.getCustomerByPhone.bind(customerController));
 router.get('/customers/phone/:phone/data', customerController.getCustomerDataByPhone.bind(customerController));
+
+// ========== Review Routes ==========
+router.post('/reviews', reviewController.createReview.bind(reviewController));
+router.get('/reviews/driver/:driverId', reviewController.getDriverReviews.bind(reviewController));
+router.get('/reviews/booking/:bookingId', reviewController.getBookingReview.bind(reviewController));
 
 // ========== Health Check ==========
 router.get('/health', (req, res) => {

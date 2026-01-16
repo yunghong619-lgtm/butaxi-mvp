@@ -5,10 +5,18 @@ import ProgressStepper from '../../components/ProgressStepper';
 import VehicleCard from '../../components/VehicleCard';
 import { ListSkeleton } from '../../components/Skeleton';
 import DriverProfile from '../../components/DriverProfile';
+import ReviewModal from '../../components/ReviewModal';
+import { useToast } from '../../components/Toast';
 
 export default function BookingList() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewModal, setReviewModal] = useState<{
+    isOpen: boolean;
+    bookingId: string;
+    driverName: string;
+  }>({ isOpen: false, bookingId: '', driverName: '' });
+  const { showToast } = useToast();
 
   const getCustomerId = () => {
     return localStorage.getItem('butaxi_customer_id') || 'customer1-id';
@@ -178,6 +186,28 @@ export default function BookingList() {
                         예약 취소
                       </button>
                     )}
+
+                    {booking.status === 'COMPLETED' && !booking.review && (
+                      <button
+                        onClick={() => setReviewModal({
+                          isOpen: true,
+                          bookingId: booking.id,
+                          driverName: booking.outboundTrip?.driver?.name || '기사님',
+                        })}
+                        className="px-6 py-2 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition flex items-center gap-2"
+                      >
+                        <span>⭐</span>
+                        리뷰 작성
+                      </button>
+                    )}
+
+                    {booking.status === 'COMPLETED' && booking.review && (
+                      <div className="flex items-center gap-2 text-yellow-500">
+                        <span className="text-lg">★</span>
+                        <span className="font-bold">{booking.review.rating}</span>
+                        <span className="text-gray-400 text-sm">리뷰 완료</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -185,6 +215,19 @@ export default function BookingList() {
           ))}
         </div>
       )}
+
+      {/* 리뷰 모달 */}
+      <ReviewModal
+        isOpen={reviewModal.isOpen}
+        onClose={() => setReviewModal({ isOpen: false, bookingId: '', driverName: '' })}
+        onComplete={() => {
+          setReviewModal({ isOpen: false, bookingId: '', driverName: '' });
+          showToast('리뷰가 등록되었습니다. 감사합니다!', 'success');
+          loadBookings();
+        }}
+        bookingId={reviewModal.bookingId}
+        driverName={reviewModal.driverName}
+      />
     </div>
   );
 }

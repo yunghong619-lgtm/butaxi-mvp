@@ -86,4 +86,12 @@ export const customerApi = {
   getDataByPhone: (phone: string) => api.get(`/customers/phone/${phone}/data`),
 };
 
+// ========== Review API ==========
+export const reviewApi = {
+  createReview: (data: { bookingId: string; rating: number; comment?: string }) =>
+    api.post('/reviews', data),
+  getDriverReviews: (driverId: string) => api.get(`/reviews/driver/${driverId}`),
+  getBookingReview: (bookingId: string) => api.get(`/reviews/booking/${bookingId}`),
+};
+
 export default api;
