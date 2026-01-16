@@ -3,6 +3,7 @@ import { rideApi } from '../../services/api';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import ProgressStepper from '../../components/ProgressStepper';
+import { ListSkeleton } from '../../components/Skeleton';
 
 export default function RideRequestList() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -53,10 +54,10 @@ export default function RideRequestList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"></div>
-          <p className="text-gray-600">예약 요청을 불러오는 중...</p>
+      <div className="min-h-screen bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <h1 className="text-3xl font-bold text-black mb-8">내 예약 요청</h1>
+          <ListSkeleton count={2} type="request" />
         </div>
       </div>
     );

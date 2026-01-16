@@ -18,7 +18,12 @@
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName\")",
       "Bash(npx prisma db push:*)",
       "Bash(powershell -Command:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "WebFetch(domain:www.hyundai.com)",
+      "WebFetch(domain:www.hyundai.news)",
+      "WebFetch(domain:www.pngwing.com)",
+      "WebFetch(domain:pngimg.com)"
     ]
   }
 }

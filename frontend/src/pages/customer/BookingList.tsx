@@ -3,6 +3,7 @@ import { bookingApi } from '../../services/api';
 import { format } from 'date-fns';
 import ProgressStepper from '../../components/ProgressStepper';
 import VehicleCard from '../../components/VehicleCard';
+import { ListSkeleton } from '../../components/Skeleton';
 
 export default function BookingList() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -65,11 +66,9 @@ export default function BookingList() {
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
-        </div>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">예약 내역</h2>
+        <ListSkeleton count={2} type="booking" />
       </div>
     );
   }
