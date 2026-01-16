@@ -1,4 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+// Confetti 파티클 타입
+interface Particle {
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  speedX: number;
+  speedY: number;
+  rotation: number;
+  rotationSpeed: number;
+}
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -44,6 +56,85 @@ export default function PaymentModal({
 }: PaymentModalProps) {
   const [step, setStep] = useState<PaymentStep>('select');
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const animationRef = useRef<number>();
+
+  // Confetti 효과
+  useEffect(() => {
+    if (step !== 'complete') return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 캔버스 크기 설정
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 파티클 색상
+    const colors = ['#FCD34D', '#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6'];
+
+    // 파티클 생성
+    const createParticles = () => {
+      const particles: Particle[] = [];
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speedX: (Math.random() - 0.5) * 20,
+          speedY: Math.random() * -15 - 5,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 10,
+        });
+      }
+      return particles;
+    };
+
+    particlesRef.current = createParticles();
+
+    // 애니메이션 함수
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((p, index) => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        p.speedY += 0.3; // 중력
+        p.speedX *= 0.99; // 마찰
+        p.rotation += p.rotationSpeed;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, 1 - p.y / canvas.height);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+
+        // 화면 밖으로 나가면 제거
+        if (p.y > canvas.height) {
+          particlesRef.current.splice(index, 1);
+        }
+      });
+
+      if (particlesRef.current.length > 0) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [step]);
 
   if (!isOpen) return null;
 
@@ -220,14 +311,21 @@ export default function PaymentModal({
         {/* Step 4: 결제 완료 (영수증) */}
         {step === 'complete' && (
           <div className="p-6">
+            {/* Confetti Canvas */}
+            <canvas
+              ref={canvasRef}
+              className="fixed inset-0 pointer-events-none z-50"
+              style={{ width: '100vw', height: '100vh' }}
+            />
+
             {/* 헤더 */}
             <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center animate-bounce-once">
                 <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold mb-1">결제 완료</h2>
+              <h2 className="text-2xl font-bold mb-1">예약 완료!</h2>
               <p className="text-gray-600">결제가 성공적으로 완료되었습니다</p>
             </div>
 
@@ -272,12 +370,27 @@ export default function PaymentModal({
               </div>
             </div>
 
+            {/* 다음 단계 안내 */}
+            <div className="mt-4 bg-amber-50 rounded-xl p-4 border border-amber-200">
+              <div className="flex items-start gap-3">
+                <div className="text-xl">🚕</div>
+                <div className="text-sm">
+                  <p className="font-semibold text-amber-900 mb-1">앞으로의 일정</p>
+                  <ul className="text-amber-800 space-y-1">
+                    <li>• 출발 30분 전 알림을 보내드려요</li>
+                    <li>• 기사님이 픽업 장소로 이동합니다</li>
+                    <li>• 예약 내역에서 상세 정보를 확인하세요</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             {/* 완료 버튼 */}
             <button
               onClick={handleComplete}
               className="w-full mt-6 py-4 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition"
             >
-              확인
+              예약 내역 보기
             </button>
           </div>
         )}
@@ -296,6 +409,13 @@ export default function PaymentModal({
           }
           .animate-scale-in {
             animation: scale-in 0.2s ease-out;
+          }
+          @keyframes bounce-once {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+          }
+          .animate-bounce-once {
+            animation: bounce-once 0.5s ease-out;
           }
         `}</style>
       </div>
