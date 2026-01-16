@@ -19,10 +19,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // 기사 프로필 정보 (DRIVER 역할인 경우에만 사용)
+  profileImage  String?  // 프로필 이미지 URL
+  rating        Float    @default(5.0)  // 평균 평점
+  totalTrips    Int      @default(0)    // 총 운행 횟수
+  bio           String?  // 자기소개
+
   // Relations
   rideRequests RideRequest[]
   bookings     Booking[]
   driverTrips  Trip[]        @relation("DriverTrips")
+  receivedReviews Review[]   @relation("DriverReviews")
 
   @@map("users")
 }
@@ -209,11 +216,33 @@ model Booking {
   // 취소 정보
   cancelledAt    DateTime?
   cancellationFee Float?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  review Review?
+
   @@map("bookings")
+}
+
+// ========== 리뷰 ==========
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  driverId   String
+  driver     User     @relation("DriverReviews", fields: [driverId], references: [id])
+  customerId String
+
+  rating     Int      // 1-5 별점
+  comment    String?  // 한줄평
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 // ========== 결제 내역 ==========

@@ -5,6 +5,7 @@ import PaymentModal from '../../components/PaymentModal';
 import { useToast } from '../../components/Toast';
 import VehicleCard from '../../components/VehicleCard';
 import { ListSkeleton } from '../../components/Skeleton';
+import DriverProfile from '../../components/DriverProfile';
 
 export default function ProposalList() {
   const [proposals, setProposals] = useState<any[]>([]);
@@ -148,41 +149,20 @@ export default function ProposalList() {
                     <VehicleCard vehicle={vehicle} size="medium" showDetails={true} />
                   </div>
 
-                  {/* 기사 정보 - 우버 스타일 */}
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl mb-4">
-                    <div className="flex items-center gap-3">
-                      {/* 실제 사람 프로필 이미지 */}
-                      <div className="relative">
-                        <img
-                          src="https://randomuser.me/api/portraits/men/32.jpg"
-                          alt={displayDriver.name}
-                          className="w-14 h-14 rounded-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${displayDriver.name}&background=000&color=fff&size=56`;
-                          }}
-                        />
-                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                      </div>
-                      <div>
-                        <p className="font-bold text-lg">{displayDriver.name}</p>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <span className="text-yellow-500">★</span>
-                          <span className="font-medium">{displayDriver.rating}</span>
-                          <span className="mx-1">·</span>
-                          <span>{displayDriver.trips.toLocaleString()}회</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 연락 버튼 */}
-                    <a
-                      href={`tel:${displayDriver.phone}`}
-                      className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                    </a>
+                  {/* 기사 프로필 */}
+                  <div className="mb-4">
+                    <DriverProfile
+                      driver={{
+                        id: driver?.id || '',
+                        name: driver?.name || displayDriver.name,
+                        phone: driver?.phone || displayDriver.phone,
+                        profileImage: driver?.profileImage,
+                        rating: driver?.rating || displayDriver.rating,
+                        totalTrips: driver?.totalTrips || displayDriver.trips,
+                      }}
+                      size="medium"
+                      showContact={true}
+                    />
                   </div>
 
                   {/* 운행 정보 - 심플하게 */}
