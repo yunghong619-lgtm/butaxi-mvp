@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import ReferralCard from '../../components/ReferralCard';
+import PointsCard from '../../components/PointsCard';
 
 export default function CustomerHome() {
   return (
@@ -74,8 +75,9 @@ export default function CustomerHome() {
           </div>
         </div>
 
-        {/* 친구 초대 */}
-        <div className="mb-12">
+        {/* 포인트 & 친구 초대 */}
+        <div className="grid md:grid-cols-2 gap-4 mb-12">
+          <PointsCard />
           <ReferralCard />
         </div>
 

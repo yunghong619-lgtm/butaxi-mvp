@@ -101,4 +101,13 @@ export const referralApi = {
     api.post('/referral/apply', data),
 };
 
+// ========== Points API ==========
+export const pointsApi = {
+  getBalance: (customerId: string) => api.get(`/points/${customerId}`),
+  usePoints: (data: { customerId: string; amount: number; bookingId?: string }) =>
+    api.post('/points/use', data),
+  earnRideReward: (data: { customerId: string; bookingId: string; paidAmount: number }) =>
+    api.post('/points/earn', data),
+};
+
 export default api;

@@ -250,6 +250,24 @@ model Review {
   @@map("reviews")
 }
 
+// ========== 포인트 내역 ==========
+
+model PointHistory {
+  id         String   @id @default(cuid())
+  userId     String
+
+  amount     Int      // + 적립, - 사용
+  type       String   // REFERRAL_BONUS, REFERRED_BONUS, RIDE_REWARD, USED, EXPIRED
+  description String  // 상세 설명
+
+  // 관련 예약 ID (옵션)
+  bookingId  String?
+
+  createdAt  DateTime @default(now())
+
+  @@map("point_history")
+}
+
 // ========== 결제 내역 ==========
 
 model Transaction {

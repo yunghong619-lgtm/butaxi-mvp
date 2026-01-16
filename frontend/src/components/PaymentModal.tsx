@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { pointsApi } from '../services/api';
 
 // Confetti 파티클 타입
 interface Particle {
@@ -56,9 +57,32 @@ export default function PaymentModal({
 }: PaymentModalProps) {
   const [step, setStep] = useState<PaymentStep>('select');
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(null);
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [usePoints, setUsePoints] = useState(0);
+  const [earnedPoints, setEarnedPoints] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>();
+
+  const customerId = localStorage.getItem('butaxi_customer_id') || '';
+
+  // 포인트 잔액 로드
+  useEffect(() => {
+    if (isOpen && customerId) {
+      loadPointsBalance();
+    }
+  }, [isOpen, customerId]);
+
+  const loadPointsBalance = async () => {
+    try {
+      const response: any = await pointsApi.getBalance(customerId);
+      if (response.success) {
+        setPointsBalance(response.data.balance);
+      }
+    } catch (error) {
+      console.error('포인트 조회 실패:', error);
+    }
+  };
 
   // Confetti 효과
   useEffect(() => {
@@ -143,20 +167,58 @@ export default function PaymentModal({
     setStep('confirm');
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     setStep('processing');
 
-    // 가짜 결제 처리 (2초 후 완료)
-    setTimeout(() => {
+    try {
+      // 포인트 사용 처리
+      if (usePoints > 0 && customerId) {
+        await pointsApi.usePoints({
+          customerId,
+          amount: usePoints,
+          bookingId,
+        });
+      }
+
+      // 가짜 결제 처리 (1.5초)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // 포인트 적립 (실결제액의 3%)
+      const finalPaidAmount = amount - usePoints;
+      if (finalPaidAmount > 0 && customerId) {
+        const earnResponse: any = await pointsApi.earnRideReward({
+          customerId,
+          bookingId,
+          paidAmount: finalPaidAmount,
+        });
+        if (earnResponse.success) {
+          setEarnedPoints(earnResponse.data.earnedPoints);
+        }
+      }
+
       setStep('complete');
-    }, 2000);
+    } catch (error) {
+      console.error('결제 처리 실패:', error);
+      setStep('confirm');
+    }
   };
 
   const handleComplete = () => {
     setStep('select');
     setSelectedMethod(null);
+    setUsePoints(0);
+    setEarnedPoints(0);
     onComplete();
   };
+
+  // 포인트 전액 사용 (최대 결제액의 50%까지)
+  const handleUseAllPoints = () => {
+    const maxUsable = Math.min(pointsBalance, Math.floor(amount * 0.5));
+    setUsePoints(maxUsable);
+  };
+
+  // 최종 결제 금액
+  const finalAmount = amount - usePoints;
 
   const handleClose = () => {
     setStep('select');
@@ -213,6 +275,52 @@ export default function PaymentModal({
                 </div>
               </div>
 
+              {/* 포인트 사용 */}
+              {pointsBalance > 0 && (
+                <div className="bg-purple-50 rounded-2xl p-4 mb-6 border border-purple-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💜</span>
+                      <span className="font-semibold text-purple-900">포인트 사용</span>
+                    </div>
+                    <span className="text-sm text-purple-700">
+                      보유: {pointsBalance.toLocaleString()}P
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={usePoints || ''}
+                      onChange={(e) => {
+                        const val = Math.min(
+                          Math.max(0, parseInt(e.target.value) || 0),
+                          Math.min(pointsBalance, Math.floor(amount * 0.5))
+                        );
+                        setUsePoints(val);
+                      }}
+                      placeholder="0"
+                      className="flex-1 px-3 py-2 border border-purple-200 rounded-lg text-right font-mono focus:outline-none focus:border-purple-400"
+                    />
+                    <span className="text-purple-700">P</span>
+                    <button
+                      onClick={handleUseAllPoints}
+                      className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition"
+                    >
+                      전액
+                    </button>
+                  </div>
+                  <p className="text-xs text-purple-600 mt-2">
+                    * 최대 결제금액의 50%까지 사용 가능
+                  </p>
+                  {usePoints > 0 && (
+                    <div className="mt-3 pt-3 border-t border-purple-200 flex justify-between text-sm font-semibold">
+                      <span className="text-purple-900">실결제액</span>
+                      <span className="text-purple-700">{finalAmount.toLocaleString()}원</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* 결제 수단 */}
               <p className="text-sm font-semibold text-gray-700 mb-3">결제 수단 선택</p>
               <div className="space-y-3">
@@ -265,10 +373,20 @@ export default function PaymentModal({
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">결제 금액</span>
-                    <span className="text-2xl font-bold">{amount.toLocaleString()}원</span>
+                <div className="border-t border-gray-200 pt-4 space-y-2">
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>이용 요금</span>
+                    <span>{amount.toLocaleString()}원</span>
+                  </div>
+                  {usePoints > 0 && (
+                    <div className="flex justify-between items-center text-sm text-purple-600">
+                      <span>포인트 할인</span>
+                      <span>-{usePoints.toLocaleString()}P</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <span className="text-gray-600">최종 결제 금액</span>
+                    <span className="text-2xl font-bold">{finalAmount.toLocaleString()}원</span>
                   </div>
                 </div>
               </div>
@@ -351,10 +469,16 @@ export default function PaymentModal({
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                {usePoints > 0 && (
+                  <div className="flex justify-between text-purple-600 text-sm">
+                    <span>포인트 사용</span>
+                    <span>-{usePoints.toLocaleString()}P</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">총 결제금액</span>
-                  <span className="text-2xl font-bold">{amount.toLocaleString()}원</span>
+                  <span className="text-2xl font-bold">{finalAmount.toLocaleString()}원</span>
                 </div>
               </div>
 
@@ -369,6 +493,20 @@ export default function PaymentModal({
                 </div>
               </div>
             </div>
+
+            {/* 적립 포인트 */}
+            {earnedPoints > 0 && (
+              <div className="mt-4 bg-purple-50 rounded-xl p-4 border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎉</span>
+                    <span className="font-semibold text-purple-900">포인트 적립</span>
+                  </div>
+                  <span className="text-lg font-bold text-purple-600">+{earnedPoints.toLocaleString()}P</span>
+                </div>
+                <p className="text-xs text-purple-700 mt-1">결제금액의 3%가 적립되었습니다</p>
+              </div>
+            )}
 
             {/* 다음 단계 안내 */}
             <div className="mt-4 bg-amber-50 rounded-xl p-4 border border-amber-200">
