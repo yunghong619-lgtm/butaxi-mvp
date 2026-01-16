@@ -106,6 +106,11 @@ model Trip {
   totalDistance Float?     // km
   estimatedDuration Int?    // minutes
 
+  // 실시간 위치 추적
+  currentLat         Float?
+  currentLng         Float?
+  lastLocationUpdate DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

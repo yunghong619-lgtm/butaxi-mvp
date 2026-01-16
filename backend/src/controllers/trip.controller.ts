@@ -177,6 +177,96 @@ export class TripController {
       });
     }
   }
+
+  /**
+   * 기사 실시간 위치 업데이트
+   */
+  async updateDriverLocation(req: Request, res: Response) {
+    try {
+      const { tripId } = req.params;
+      const { latitude, longitude } = req.body;
+
+      if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+        return res.status(400).json({
+          success: false,
+          error: '유효한 위치 정보가 필요합니다.',
+        });
+      }
+
+      const trip = await prisma.trip.update({
+        where: { id: tripId },
+        data: {
+          currentLat: latitude,
+          currentLng: longitude,
+          lastLocationUpdate: new Date(),
+        },
+        include: {
+          stops: {
+            orderBy: { sequence: 'asc' },
+          },
+        },
+      });
+
+      // 다음 정거장까지 예상 시간 계산 (간단한 직선 거리 기반)
+      const nextStop = trip.stops.find((s) => !s.actualTime);
+      let estimatedMinutesToNextStop = null;
+
+      if (nextStop) {
+        const distance = this.calculateDistance(
+          latitude,
+          longitude,
+          nextStop.latitude,
+          nextStop.longitude
+        );
+        // 평균 속도 30km/h 가정
+        estimatedMinutesToNextStop = Math.round((distance / 30) * 60);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          tripId: trip.id,
+          currentLat: trip.currentLat,
+          currentLng: trip.currentLng,
+          lastLocationUpdate: trip.lastLocationUpdate,
+          estimatedMinutesToNextStop,
+        },
+        message: '위치가 업데이트되었습니다.',
+      });
+    } catch (error) {
+      console.error('위치 업데이트 실패:', error);
+      res.status(500).json({
+        success: false,
+        error: '위치 업데이트 중 오류가 발생했습니다.',
+      });
+    }
+  }
+
+  /**
+   * 두 좌표 사이의 거리 계산 (Haversine formula, km)
+   */
+  private calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ): number {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = this.toRad(lat2 - lat1);
+    const dLng = this.toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRad(lat1)) *
+        Math.cos(this.toRad(lat2)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  private toRad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
 }
 
 export const tripController = new TripController();

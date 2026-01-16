@@ -85,6 +85,35 @@ export default function TripTracking() {
 
   const statusInfo = getStatusInfo(trip.status);
 
+  // ETA 계산 (간단한 직선 거리 기반)
+  const calculateETA = (stops: any[], currentLoc: { lat: number; lng: number }) => {
+    const nextStop = stops?.find((s: any) => !s.actualTime);
+    if (!nextStop || !currentLoc) return '--:--';
+
+    // Haversine 거리 계산 (km)
+    const toRad = (deg: number) => deg * (Math.PI / 180);
+    const R = 6371;
+    const dLat = toRad(nextStop.latitude - currentLoc.lat);
+    const dLng = toRad(nextStop.longitude - currentLoc.lng);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(currentLoc.lat)) *
+        Math.cos(toRad(nextStop.latitude)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    // 평균 속도 25km/h 가정 (도심 교통)
+    const minutes = Math.round((distance / 25) * 60);
+
+    if (minutes < 1) return '곧 도착';
+    if (minutes < 60) return `${minutes}분`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}시간 ${mins}분`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -156,26 +185,72 @@ export default function TripTracking() {
         )}
       </div>
 
-      {/* 실시간 위치 정보 */}
+      {/* 실시간 위치 정보 & ETA */}
       {trip.status === 'IN_PROGRESS' && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📍</span>
-              <div>
-                <h3 className="font-semibold text-gray-900">실시간 위치</h3>
-                {trip.lastLocationUpdate && (
-                  <p className="text-xs text-gray-500">
-                    마지막 업데이트:{' '}
-                    {format(new Date(trip.lastLocationUpdate), 'HH:mm:ss', { locale: ko })}
-                  </p>
-                )}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          {/* 헤더 */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl animate-pulse">🚗</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">기사님이 이동 중</h3>
+                  {trip.lastLocationUpdate && (
+                    <p className="text-green-100 text-sm">
+                      {format(new Date(trip.lastLocationUpdate), 'HH:mm', { locale: ko })} 업데이트
+                    </p>
+                  )}
+                </div>
               </div>
+              {currentLocation && (
+                <div className="text-right">
+                  <div className="text-3xl font-bold">
+                    {calculateETA(trip.stops, currentLocation)}
+                  </div>
+                  <p className="text-green-100 text-sm">예상 도착</p>
+                </div>
+              )}
             </div>
-            {!currentLocation && (
-              <span className="text-sm text-gray-500">위치 정보 대기 중...</span>
-            )}
           </div>
+
+          {/* 다음 정거장 정보 */}
+          {(() => {
+            const nextStop = trip.stops?.find((s: any) => !s.actualTime);
+            if (!nextStop) return null;
+            return (
+              <div className="p-4 border-b">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                    nextStop.stopType === 'PICKUP' ? 'bg-blue-500' : 'bg-green-500'
+                  }`}>
+                    {nextStop.stopType === 'PICKUP' ? '🚶' : '🏁'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500">
+                      {nextStop.stopType === 'PICKUP' ? '다음 픽업' : '다음 하차'}
+                    </p>
+                    <p className="font-semibold text-gray-900 truncate">{nextStop.address}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">예정 시간</p>
+                    <p className="font-bold text-gray-900">
+                      {format(new Date(nextStop.scheduledTime), 'HH:mm', { locale: ko })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 위치 대기 중 */}
+          {!currentLocation && (
+            <div className="p-4 flex items-center justify-center gap-2 text-gray-500">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              <span className="text-sm">위치 정보를 불러오는 중...</span>
+            </div>
+          )}
         </div>
       )}
 

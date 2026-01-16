@@ -28,6 +28,7 @@ router.post('/bookings/:bookingId/cancel', bookingController.cancelBooking.bind(
 router.get('/trips/driver/:driverId', tripController.getDriverTrips.bind(tripController));
 router.get('/trips/:tripId', tripController.getTripDetail.bind(tripController));
 router.patch('/trips/:tripId/status', tripController.updateTripStatus.bind(tripController));
+router.patch('/trips/:tripId/location', tripController.updateDriverLocation.bind(tripController));
 router.post('/trips/stops/:stopId/checkin', tripController.checkInStop.bind(tripController));
 
 // ========== Customer Routes ==========
