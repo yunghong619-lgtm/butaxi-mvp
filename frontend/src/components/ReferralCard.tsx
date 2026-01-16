@@ -33,7 +33,7 @@ export default function ReferralCard() {
     }
   }, [customerId]);
 
-  const loadReferralData = async () => {
+  const loadReferralData = async (retryCount = 0) => {
     setError(false);
 
     // 3초 후에도 로딩 중이면 안내 메시지 표시
@@ -48,6 +48,12 @@ export default function ReferralCard() {
       }
     } catch (error) {
       console.error('초대 코드 로드 실패:', error);
+      // 최대 2회 자동 재시도
+      if (retryCount < 2) {
+        clearTimeout(longLoadingTimer);
+        setTimeout(() => loadReferralData(retryCount + 1), 2000);
+        return;
+      }
       setError(true);
     } finally {
       clearTimeout(longLoadingTimer);
@@ -147,7 +153,7 @@ export default function ReferralCard() {
         </div>
         <p className="text-white/80 text-sm mb-3">로드 실패</p>
         <button
-          onClick={loadReferralData}
+          onClick={() => loadReferralData(0)}
           className="px-4 py-2 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition"
         >
           다시 시도

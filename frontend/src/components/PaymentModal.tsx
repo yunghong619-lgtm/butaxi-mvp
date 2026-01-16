@@ -249,12 +249,14 @@ export default function PaymentModal({
   const timeFare = Math.round(amount * 0.1);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+      {/* Modal Container - 화면 중앙 고정 */}
+      <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        {/* Modal */}
+        <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto animate-scale-in pointer-events-auto">
         {/* Step 1: 결제 수단 선택 */}
         {step === 'select' && (
           <>
@@ -585,6 +587,7 @@ export default function PaymentModal({
             animation: bounce-once 0.5s ease-out;
           }
         `}</style>
+        </div>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ export default function PointsCard() {
     }
   }, [customerId]);
 
-  const loadPointsData = async () => {
+  const loadPointsData = async (retryCount = 0) => {
     setError(false);
 
     // 3초 후에도 로딩 중이면 안내 메시지 표시
@@ -43,6 +43,12 @@ export default function PointsCard() {
       }
     } catch (error) {
       console.error('포인트 조회 실패:', error);
+      // 최대 2회 자동 재시도
+      if (retryCount < 2) {
+        clearTimeout(longLoadingTimer);
+        setTimeout(() => loadPointsData(retryCount + 1), 2000);
+        return;
+      }
       setError(true);
     } finally {
       clearTimeout(longLoadingTimer);
@@ -82,7 +88,7 @@ export default function PointsCard() {
         </div>
         <p className="text-white/80 text-sm mb-3">로드 실패</p>
         <button
-          onClick={loadPointsData}
+          onClick={() => loadPointsData(0)}
           className="px-4 py-2 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition"
         >
           다시 시도
