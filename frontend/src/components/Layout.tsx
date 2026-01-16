@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import Logo from './Logo';
+import Footer from './Footer';
 
 export default function Layout() {
   const location = useLocation();
@@ -69,12 +70,7 @@ export default function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
-          <p className="text-gray-500 text-sm mb-1">© 2026 BUTAXI. Share your ride</p>
-          <p className="text-gray-400 text-xs">MVP Version 1.0.0</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

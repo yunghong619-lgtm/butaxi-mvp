@@ -103,7 +103,7 @@ export default function ProposalList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">받은 제안</h2>
         <button
@@ -155,7 +155,7 @@ export default function ProposalList() {
             return (
               <div
                 key={proposal.id}
-                className={`bg-white rounded-2xl shadow-sm overflow-hidden ${
+                className={`bg-white rounded-2xl shadow-sm overflow-hidden card-hover ${
                   isAccepted ? 'ring-2 ring-green-500' : ''
                 }`}
               >

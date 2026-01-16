@@ -24,7 +24,10 @@
       "WebFetch(domain:www.hyundai.news)",
       "WebFetch(domain:www.pngwing.com)",
       "WebFetch(domain:pngimg.com)",
-      "Bash(npx prisma migrate dev:*)"
+      "Bash(npx prisma migrate dev:*)",
+      "WebFetch(domain:butaxi-backend.onrender.com)",
+      "WebFetch(domain:butaxi-frontend.onrender.com)",
+      "Bash(git tag:*)"
     ]
   }
 }

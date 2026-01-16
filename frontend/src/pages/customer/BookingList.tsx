@@ -90,7 +90,7 @@ export default function BookingList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">예약 내역</h2>
         <button
@@ -127,7 +127,7 @@ export default function BookingList() {
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (
-            <div key={booking.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div key={booking.id} className="bg-white rounded-2xl shadow-sm overflow-hidden card-hover">
               <div className="p-5">
                 {/* 헤더 */}
                 <div className="flex items-start justify-between mb-4">

@@ -146,3 +146,123 @@ body {
 .safe-top {
   padding-top: env(safe-area-inset-top);
 }
+
+/* ========== 마이크로 인터랙션 ========== */
+
+/* 버튼 클릭 효과 - 살짝 눌림 */
+button,
+a[role="button"],
+.btn {
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+button:active:not(:disabled),
+a[role="button"]:active,
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* 카드 호버 효과 */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 링크/카드 영역 터치 피드백 */
+.touch-feedback {
+  transition: background-color 0.15s ease;
+}
+
+.touch-feedback:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 페이지 진입 애니메이션 */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 0.3s ease-out forwards;
+}
+
+/* 리플 효과 (버튼용) */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.ripple:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* 스무스 포커스 링 */
+*:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 입력 필드 포커스 효과 */
+input:focus,
+textarea:focus,
+select:focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 체크박스/라디오 애니메이션 */
+input[type="checkbox"],
+input[type="radio"] {
+  transition: transform 0.1s ease;
+}
+
+input[type="checkbox"]:active,
+input[type="radio"]:active {
+  transform: scale(0.9);
+}
+
+/* 스켈레톤 로딩 시머 효과 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

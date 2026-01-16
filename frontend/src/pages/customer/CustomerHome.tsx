@@ -68,7 +68,7 @@ export default function CustomerHome() {
   const nextPickup = getNextPickup();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white page-enter">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
@@ -132,7 +132,7 @@ export default function CustomerHome() {
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Link
             to="/customer/requests"
-            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-colors"
+            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-all card-hover"
           >
             <h3 className="font-bold text-lg mb-2">내 예약 요청</h3>
             <p className="text-gray-600 text-sm">신청한 예약 요청을 확인하세요</p>
@@ -140,7 +140,7 @@ export default function CustomerHome() {
 
           <Link
             to="/customer/proposals"
-            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-colors"
+            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-all card-hover"
           >
             <h3 className="font-bold text-lg mb-2">받은 제안</h3>
             <p className="text-gray-600 text-sm">도착한 제안을 확인하세요</p>
@@ -148,7 +148,7 @@ export default function CustomerHome() {
 
           <Link
             to="/customer/bookings"
-            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-colors"
+            className="border-2 border-gray-200 p-6 rounded-xl hover:border-black transition-all card-hover"
           >
             <h3 className="font-bold text-lg mb-2">예약 내역</h3>
             <p className="text-gray-600 text-sm">확정된 예약을 관리하세요</p>
