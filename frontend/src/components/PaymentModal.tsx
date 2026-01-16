@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { pointsApi } from '../services/api';
+import { useToast } from './Toast';
 
 // Confetti 파티클 타입
 interface Particle {
@@ -60,9 +61,11 @@ export default function PaymentModal({
   const [pointsBalance, setPointsBalance] = useState(0);
   const [usePoints, setUsePoints] = useState(0);
   const [earnedPoints, setEarnedPoints] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>();
+  const { showToast } = useToast();
 
   const customerId = localStorage.getItem('butaxi_customer_id') || '';
 
@@ -169,15 +172,21 @@ export default function PaymentModal({
 
   const handleConfirmPayment = async () => {
     setStep('processing');
+    setErrorMessage('');
 
     try {
       // 포인트 사용 처리
       if (usePoints > 0 && customerId) {
-        await pointsApi.usePoints({
-          customerId,
-          amount: usePoints,
-          bookingId,
-        });
+        try {
+          await pointsApi.usePoints({
+            customerId,
+            amount: usePoints,
+            bookingId,
+          });
+        } catch (pointsError) {
+          console.error('포인트 사용 실패:', pointsError);
+          // 포인트 사용 실패해도 결제는 계속 진행
+        }
       }
 
       // 가짜 결제 처리 (1.5초)
@@ -186,19 +195,27 @@ export default function PaymentModal({
       // 포인트 적립 (실결제액의 3%)
       const finalPaidAmount = amount - usePoints;
       if (finalPaidAmount > 0 && customerId) {
-        const earnResponse: any = await pointsApi.earnRideReward({
-          customerId,
-          bookingId,
-          paidAmount: finalPaidAmount,
-        });
-        if (earnResponse.success) {
-          setEarnedPoints(earnResponse.data.earnedPoints);
+        try {
+          const earnResponse: any = await pointsApi.earnRideReward({
+            customerId,
+            bookingId,
+            paidAmount: finalPaidAmount,
+          });
+          if (earnResponse.success) {
+            setEarnedPoints(earnResponse.data.earnedPoints);
+          }
+        } catch (earnError) {
+          console.error('포인트 적립 실패:', earnError);
+          // 포인트 적립 실패해도 결제는 완료 처리
         }
       }
 
       setStep('complete');
-    } catch (error) {
+    } catch (error: any) {
       console.error('결제 처리 실패:', error);
+      const message = error.response?.data?.error || error.message || '결제 처리 중 오류가 발생했습니다.';
+      setErrorMessage(message);
+      showToast(message, 'error');
       setStep('confirm');
     }
   };
@@ -395,6 +412,18 @@ export default function PaymentModal({
               <div className="text-sm text-gray-500 mb-6">
                 <p>예약번호: {bookingId.slice(0, 8)}</p>
               </div>
+
+              {/* 에러 메시지 */}
+              {errorMessage && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-semibold text-sm">{errorMessage}</span>
+                  </div>
+                </div>
+              )}
 
               {/* 버튼 */}
               <div className="flex gap-3">

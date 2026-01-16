@@ -23,7 +23,8 @@
       "WebFetch(domain:www.hyundai.com)",
       "WebFetch(domain:www.hyundai.news)",
       "WebFetch(domain:www.pngwing.com)",
-      "WebFetch(domain:pngimg.com)"
+      "WebFetch(domain:pngimg.com)",
+      "Bash(npx prisma migrate dev:*)"
     ]
   }
 }

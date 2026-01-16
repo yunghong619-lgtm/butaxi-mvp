@@ -14,6 +14,8 @@ export default function PointsCard() {
   const [history, setHistory] = useState<PointHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [loadingLong, setLoadingLong] = useState(false);
+  const [error, setError] = useState(false);
 
   const customerId = localStorage.getItem('butaxi_customer_id') || '';
 
@@ -26,6 +28,13 @@ export default function PointsCard() {
   }, [customerId]);
 
   const loadPointsData = async () => {
+    setError(false);
+
+    // 3초 후에도 로딩 중이면 안내 메시지 표시
+    const longLoadingTimer = setTimeout(() => {
+      setLoadingLong(true);
+    }, 3000);
+
     try {
       const response: any = await pointsApi.getBalance(customerId);
       if (response.success) {
@@ -34,8 +43,11 @@ export default function PointsCard() {
       }
     } catch (error) {
       console.error('포인트 조회 실패:', error);
+      setError(true);
     } finally {
+      clearTimeout(longLoadingTimer);
       setLoading(false);
+      setLoadingLong(false);
     }
   };
 
@@ -53,7 +65,28 @@ export default function PointsCard() {
     return (
       <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl p-6 text-white animate-pulse">
         <div className="h-6 w-32 bg-white/20 rounded mb-4" />
-        <div className="h-10 w-48 bg-white/20 rounded" />
+        <div className="h-10 w-48 bg-white/20 rounded mb-3" />
+        {loadingLong && (
+          <p className="text-sm text-white/80">서버가 시작 중입니다...</p>
+        )}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-2xl">💎</span>
+          <h3 className="text-lg font-bold">내 포인트</h3>
+        </div>
+        <p className="text-white/80 text-sm mb-3">로드 실패</p>
+        <button
+          onClick={loadPointsData}
+          className="px-4 py-2 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition"
+        >
+          다시 시도
+        </button>
       </div>
     );
   }

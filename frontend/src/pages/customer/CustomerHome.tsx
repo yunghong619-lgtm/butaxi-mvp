@@ -1,13 +1,77 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { bookingApi } from '../../services/api';
+import { format } from 'date-fns';
 import ReferralCard from '../../components/ReferralCard';
 import PointsCard from '../../components/PointsCard';
 
+interface ActiveBooking {
+  id: string;
+  status: string;
+  totalPrice: number;
+  outboundTrip?: {
+    driver?: {
+      name: string;
+    };
+    vehicle?: {
+      name: string;
+      licensePlate: string;
+    };
+    stops?: Array<{
+      stopType: string;
+      scheduledTime: string;
+      address: string;
+    }>;
+  };
+}
+
 export default function CustomerHome() {
+  const [activeBooking, setActiveBooking] = useState<ActiveBooking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const customerId = localStorage.getItem('butaxi_customer_id') || '';
+
+  useEffect(() => {
+    if (customerId) {
+      loadActiveBooking();
+    } else {
+      setLoading(false);
+    }
+  }, [customerId]);
+
+  const loadActiveBooking = async () => {
+    try {
+      const response: any = await bookingApi.getCustomerBookings(customerId);
+      if (response.success) {
+        // CONFIRMED 또는 IN_TRIP 상태인 예약 찾기
+        const active = response.data.find(
+          (b: any) => b.status === 'CONFIRMED' || b.status === 'IN_TRIP'
+        );
+        setActiveBooking(active || null);
+      }
+    } catch (error) {
+      console.error('예약 조회 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNextPickup = () => {
+    if (!activeBooking?.outboundTrip?.stops) return null;
+    const pickupStop = activeBooking.outboundTrip.stops.find(
+      (s) => s.stopType === 'PICKUP'
+    );
+    return pickupStop;
+  };
+
+  const nextPickup = getNextPickup();
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-8">
           <h1 className="text-4xl font-bold text-black mb-3">
             안녕하세요
           </h1>
@@ -15,6 +79,40 @@ export default function CustomerHome() {
             어디로 이동하시나요?
           </p>
         </div>
+
+        {/* 진행 중인 예약 */}
+        {!loading && activeBooking && (
+          <button
+            onClick={() => navigate('/customer/bookings')}
+            className="w-full mb-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-5 rounded-2xl shadow-lg hover:shadow-xl transition-all text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm text-white/80">
+                    {activeBooking.status === 'IN_TRIP' ? '운행 중' : '예약 확정'}
+                  </p>
+                  <p className="text-lg font-bold">
+                    {nextPickup
+                      ? `${format(new Date(nextPickup.scheduledTime), 'MM/dd HH:mm')} 픽업`
+                      : '예약이 확정되었습니다'}
+                  </p>
+                  {activeBooking.outboundTrip?.driver && (
+                    <p className="text-sm text-white/80 mt-1">
+                      {activeBooking.outboundTrip.driver.name} 기사님 | {activeBooking.outboundTrip.vehicle?.licensePlate}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <span className="text-2xl">→</span>
+            </div>
+          </button>
+        )}
 
         {/* Main Action */}
         <Link

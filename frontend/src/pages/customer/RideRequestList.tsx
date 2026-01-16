@@ -8,6 +8,7 @@ import { ListSkeleton } from '../../components/Skeleton';
 export default function RideRequestList() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // customerId를 localStorage에서 가져오기
   const customerId = localStorage.getItem('butaxi_customer_id') || '';
@@ -15,6 +16,12 @@ export default function RideRequestList() {
   useEffect(() => {
     loadRequests();
   }, [customerId]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadRequests();
+    setRefreshing(false);
+  };
 
   const loadRequests = async () => {
     if (!customerId) {
@@ -83,8 +90,25 @@ export default function RideRequestList() {
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">내 예약 요청</h1>
-          <p className="text-gray-600">총 {requests.length}개의 예약 요청</p>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-black">내 예약 요청</h1>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+              title="새로고침"
+            >
+              <svg
+                className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-gray-600 mt-2">총 {requests.length}개의 예약 요청</p>
         </div>
 
         <div className="space-y-4">

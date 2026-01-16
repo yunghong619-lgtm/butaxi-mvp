@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { proposalApi } from '../../services/api';
 import { format } from 'date-fns';
 import PaymentModal from '../../components/PaymentModal';
@@ -6,16 +7,26 @@ import { useToast } from '../../components/Toast';
 import VehicleCard from '../../components/VehicleCard';
 import { ListSkeleton } from '../../components/Skeleton';
 import DriverProfile from '../../components/DriverProfile';
+import DriverReviewsModal from '../../components/DriverReviewsModal';
 
 export default function ProposalList() {
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [paymentModal, setPaymentModal] = useState<{
     isOpen: boolean;
     proposalId: string;
     amount: number;
   }>({ isOpen: false, proposalId: '', amount: 0 });
+  const [reviewModal, setReviewModal] = useState<{
+    isOpen: boolean;
+    driverId: string;
+    driverName: string;
+    driverRating: number;
+    driverTrips: number;
+  }>({ isOpen: false, driverId: '', driverName: '', driverRating: 4.9, driverTrips: 0 });
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const customerId = localStorage.getItem('butaxi_customer_id') || '';
 
@@ -40,19 +51,30 @@ export default function ProposalList() {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadProposals();
+    setRefreshing(false);
+  };
+
   const handleAccept = (proposalId: string, amount: number) => {
     setPaymentModal({ isOpen: true, proposalId, amount });
   };
 
   const handlePaymentComplete = async () => {
     try {
+      showToast('예약을 확정하는 중...', 'info');
       const response: any = await proposalApi.acceptProposal(paymentModal.proposalId);
       if (response.success) {
         showToast('예약이 확정되었습니다!', 'success');
         loadProposals();
+      } else {
+        showToast(response.error || '예약 확정에 실패했습니다.', 'error');
       }
     } catch (error: any) {
-      showToast(error.response?.data?.error || '처리 중 오류가 발생했습니다.', 'error');
+      console.error('예약 확정 실패:', error);
+      const errorMsg = error.response?.data?.error || error.message || '처리 중 오류가 발생했습니다.';
+      showToast(errorMsg, 'error');
     }
     setPaymentModal({ isOpen: false, proposalId: '', amount: 0 });
   };
@@ -82,7 +104,24 @@ export default function ProposalList() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">받은 제안</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">받은 제안</h2>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+          title="새로고침"
+        >
+          <svg
+            className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
 
       {proposals.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
@@ -108,7 +147,7 @@ export default function ProposalList() {
             // 기본 기사 정보
             const displayDriver = {
               name: driver?.name || '박기사',
-              phone: driver?.phone || '010-1234-5678',
+              phone: driver?.phone || '010-4922-0573',
               rating: 4.9,
               trips: 1234
             };
@@ -162,6 +201,13 @@ export default function ProposalList() {
                       }}
                       size="medium"
                       showContact={true}
+                      onClick={() => setReviewModal({
+                        isOpen: true,
+                        driverId: driver?.id || '',
+                        driverName: driver?.name || displayDriver.name,
+                        driverRating: driver?.rating || displayDriver.rating,
+                        driverTrips: driver?.totalTrips || displayDriver.trips,
+                      })}
                     />
                   </div>
 
@@ -202,7 +248,10 @@ export default function ProposalList() {
 
                   {/* 버튼 */}
                   {isAccepted ? (
-                    <div className="bg-green-50 rounded-xl p-4 text-center">
+                    <button
+                      onClick={() => navigate('/customer/bookings')}
+                      className="w-full bg-green-50 rounded-xl p-4 text-center hover:bg-green-100 transition-colors cursor-pointer"
+                    >
                       <div className="flex items-center justify-center gap-2 text-green-700 font-bold">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -210,9 +259,9 @@ export default function ProposalList() {
                         예약이 확정되었습니다
                       </div>
                       <p className="text-green-600 text-sm mt-1">
-                        출발 30분 전에 알림을 보내드립니다
+                        예약 내역 보기 →
                       </p>
-                    </div>
+                    </button>
                   ) : (
                     <div className="flex gap-3">
                       <button
@@ -242,6 +291,15 @@ export default function ProposalList() {
         onComplete={handlePaymentComplete}
         amount={paymentModal.amount}
         bookingId={paymentModal.proposalId}
+      />
+
+      <DriverReviewsModal
+        isOpen={reviewModal.isOpen}
+        onClose={() => setReviewModal({ isOpen: false, driverId: '', driverName: '', driverRating: 4.9, driverTrips: 0 })}
+        driverId={reviewModal.driverId}
+        driverName={reviewModal.driverName}
+        driverRating={reviewModal.driverRating}
+        driverTrips={reviewModal.driverTrips}
       />
     </div>
   );

@@ -13,6 +13,7 @@ interface DriverProfileProps {
   size?: 'small' | 'medium' | 'large';
   showContact?: boolean;
   showBio?: boolean;
+  onClick?: () => void;
 }
 
 export default function DriverProfile({
@@ -20,6 +21,7 @@ export default function DriverProfile({
   size = 'medium',
   showContact = true,
   showBio = false,
+  onClick,
 }: DriverProfileProps) {
   // 기본값 설정
   const displayDriver = {
@@ -95,7 +97,10 @@ export default function DriverProfile({
   };
 
   return (
-    <div className={`flex items-center justify-between border border-gray-200 rounded-xl ${styles.container}`}>
+    <div
+      className={`flex items-center justify-between border border-gray-200 rounded-xl ${styles.container} ${onClick ? 'cursor-pointer hover:border-gray-300 hover:bg-gray-50 transition-colors' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-center gap-3">
         {/* 프로필 이미지 */}
         <div className="relative">
@@ -142,6 +147,7 @@ export default function DriverProfile({
           href={`tel:${displayDriver.phone}`}
           className={`${styles.button} bg-black text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors shadow-md`}
           title="전화하기"
+          onClick={(e) => e.stopPropagation()}
         >
           <svg
             className={size === 'small' ? 'w-4 h-4' : 'w-5 h-5'}

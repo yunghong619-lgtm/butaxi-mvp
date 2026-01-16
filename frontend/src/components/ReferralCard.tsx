@@ -19,6 +19,8 @@ export default function ReferralCard() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [inputCode, setInputCode] = useState('');
   const [applying, setApplying] = useState(false);
+  const [loadingLong, setLoadingLong] = useState(false);
+  const [error, setError] = useState(false);
   const { showToast } = useToast();
 
   const customerId = localStorage.getItem('butaxi_customer_id') || '';
@@ -32,6 +34,13 @@ export default function ReferralCard() {
   }, [customerId]);
 
   const loadReferralData = async () => {
+    setError(false);
+
+    // 3초 후에도 로딩 중이면 안내 메시지 표시
+    const longLoadingTimer = setTimeout(() => {
+      setLoadingLong(true);
+    }, 3000);
+
     try {
       const response: any = await referralApi.getMyReferralCode(customerId);
       if (response.success) {
@@ -39,8 +48,11 @@ export default function ReferralCard() {
       }
     } catch (error) {
       console.error('초대 코드 로드 실패:', error);
+      setError(true);
     } finally {
+      clearTimeout(longLoadingTimer);
       setLoading(false);
+      setLoadingLong(false);
     }
   };
 
@@ -118,7 +130,28 @@ export default function ReferralCard() {
       <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 text-white animate-pulse">
         <div className="h-6 w-32 bg-white/20 rounded mb-4" />
         <div className="h-10 w-48 bg-white/20 rounded mb-4" />
-        <div className="h-4 w-40 bg-white/20 rounded" />
+        <div className="h-4 w-40 bg-white/20 rounded mb-3" />
+        {loadingLong && (
+          <p className="text-sm text-white/80">서버가 시작 중입니다...</p>
+        )}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 text-white">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-2xl">🎁</span>
+          <h3 className="text-xl font-bold">친구 초대</h3>
+        </div>
+        <p className="text-white/80 text-sm mb-3">로드 실패</p>
+        <button
+          onClick={loadReferralData}
+          className="px-4 py-2 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition"
+        >
+          다시 시도
+        </button>
       </div>
     );
   }

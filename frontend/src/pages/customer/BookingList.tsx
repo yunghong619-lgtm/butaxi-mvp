@@ -11,6 +11,7 @@ import { useToast } from '../../components/Toast';
 export default function BookingList() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean;
     bookingId: string;
@@ -27,6 +28,12 @@ export default function BookingList() {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadBookings();
+    setRefreshing(false);
+  };
 
   const loadBookings = async () => {
     try {
@@ -84,7 +91,24 @@ export default function BookingList() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">예약 내역</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">예약 내역</h2>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+          title="새로고침"
+        >
+          <svg
+            className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
 
       {bookings.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
