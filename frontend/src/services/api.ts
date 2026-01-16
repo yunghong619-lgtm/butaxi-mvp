@@ -16,7 +16,7 @@ const getBaseURL = (): string => {
 
 const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 15000,
+  timeout: 60000, // Render 무료 플랜은 콜드 스타트에 시간이 걸림
   headers: {
     'Content-Type': 'application/json',
   },
