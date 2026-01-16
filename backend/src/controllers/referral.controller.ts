@@ -25,11 +25,37 @@ export class ReferralController {
         },
       });
 
+      // 사용자가 없으면 자동 생성 (신규 고객)
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          error: '사용자를 찾을 수 없습니다.',
+        const referralCode = this.generateReferralCode('BT');
+        const newUser = await prisma.user.create({
+          data: {
+            id: customerId,
+            email: `${customerId}@butaxi.com`,
+            phone: '010-0000-0000',
+            name: '고객',
+            role: 'CUSTOMER',
+            points: 1000,
+            referralCode,
+          },
         });
+
+        // 신규 가입 보너스 포인트 내역 생성
+        await prisma.pointHistory.create({
+          data: {
+            userId: customerId,
+            amount: 1000,
+            type: 'REFERRAL_BONUS',
+            description: '신규 가입 보너스',
+          },
+        });
+
+        user = {
+          id: newUser.id,
+          name: newUser.name,
+          referralCode: newUser.referralCode,
+          points: newUser.points,
+        };
       }
 
       // 초대 코드가 없으면 생성

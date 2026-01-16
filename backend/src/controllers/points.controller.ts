@@ -14,7 +14,7 @@ export class PointsController {
     try {
       const { customerId } = req.params;
 
-      const user = await prisma.user.findUnique({
+      let user = await prisma.user.findUnique({
         where: { id: customerId },
         select: {
           id: true,
@@ -23,11 +23,34 @@ export class PointsController {
         },
       });
 
+      // 사용자가 없으면 자동 생성 (신규 고객)
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          error: '사용자를 찾을 수 없습니다.',
+        const newUser = await prisma.user.create({
+          data: {
+            id: customerId,
+            email: `${customerId}@butaxi.com`,
+            phone: '010-0000-0000',
+            name: '고객',
+            role: 'CUSTOMER',
+            points: 1000, // 신규 가입 보너스
+          },
         });
+
+        // 신규 가입 보너스 포인트 내역 생성
+        await prisma.pointHistory.create({
+          data: {
+            userId: customerId,
+            amount: 1000,
+            type: 'REFERRAL_BONUS',
+            description: '신규 가입 보너스',
+          },
+        });
+
+        user = {
+          id: newUser.id,
+          name: newUser.name,
+          points: newUser.points,
+        };
       }
 
       // 포인트 내역 조회 (최근 20건)
