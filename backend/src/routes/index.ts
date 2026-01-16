@@ -5,6 +5,7 @@ import { bookingController } from '../controllers/booking.controller';
 import { tripController } from '../controllers/trip.controller';
 import { customerController } from '../controllers/customer.controller';
 import { reviewController } from '../controllers/review.controller';
+import { referralController } from '../controllers/referral.controller';
 
 const router = Router();
 
@@ -41,6 +42,10 @@ router.get('/customers/phone/:phone/data', customerController.getCustomerDataByP
 router.post('/reviews', reviewController.createReview.bind(reviewController));
 router.get('/reviews/driver/:driverId', reviewController.getDriverReviews.bind(reviewController));
 router.get('/reviews/booking/:bookingId', reviewController.getBookingReview.bind(reviewController));
+
+// ========== Referral Routes ==========
+router.get('/referral/:customerId', referralController.getMyReferralCode.bind(referralController));
+router.post('/referral/apply', referralController.applyReferralCode.bind(referralController));
 
 // ========== Health Check ==========
 router.get('/health', (req, res) => {

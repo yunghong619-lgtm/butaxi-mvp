@@ -94,4 +94,11 @@ export const reviewApi = {
   getBookingReview: (bookingId: string) => api.get(`/reviews/booking/${bookingId}`),
 };
 
+// ========== Referral API ==========
+export const referralApi = {
+  getMyReferralCode: (customerId: string) => api.get(`/referral/${customerId}`),
+  applyReferralCode: (data: { customerId: string; referralCode: string }) =>
+    api.post('/referral/apply', data),
+};
+
 export default api;

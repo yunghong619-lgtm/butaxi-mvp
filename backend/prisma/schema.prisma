@@ -25,6 +25,11 @@ model User {
   totalTrips    Int      @default(0)    // 총 운행 횟수
   bio           String?  // 자기소개
 
+  // 친구 초대 & 포인트
+  referralCode  String?  @unique  // 내 초대 코드
+  referredBy    String?  // 나를 초대한 사람의 ID
+  points        Int      @default(0)  // 포인트 잔액
+
   // Relations
   rideRequests RideRequest[]
   bookings     Booking[]
