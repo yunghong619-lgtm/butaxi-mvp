@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import LocationMapModal from './LocationMapModal';
+import { useSavedPlaces, PLACE_ICONS } from '../hooks/useSavedPlaces';
 
 interface AddressSearchProps {
   value: string;
   onChange: (address: string, lat: number, lng: number) => void;
   placeholder?: string;
   label?: string;
+  showSavedPlaces?: boolean;
 }
 
 // 네이버 Geocode API로 주소에서 좌표 얻기
@@ -87,6 +89,7 @@ export default function AddressSearch({
   onChange,
   placeholder = '주소 찾기 버튼을 눌러주세요',
   label,
+  showSavedPlaces = true,
 }: AddressSearchProps) {
   const [internalValue, setInternalValue] = useState(value);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
@@ -95,6 +98,16 @@ export default function AddressSearch({
     lat: 37.5665,
     lng: 126.9780,
   });
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveName, setSaveName] = useState('');
+  const [saveIcon, setSaveIcon] = useState('⭐');
+  const [pendingSaveAddress, setPendingSaveAddress] = useState<{
+    address: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  const { places, addPlace, removePlace } = useSavedPlaces();
 
   useEffect(() => {
     setInternalValue(value);
@@ -211,6 +224,45 @@ export default function AddressSearch({
     setIsMapModalOpen(false);
   };
 
+  // 저장된 장소 선택
+  const handleSelectSavedPlace = (place: { address: string; lat: number; lng: number }) => {
+    setInternalValue(place.address);
+    onChange(place.address, place.lat, place.lng);
+  };
+
+  // 현재 주소 저장하기 시작
+  const handleStartSavePlace = () => {
+    if (!internalValue || !value) return;
+    setPendingSaveAddress({
+      address: internalValue,
+      lat: 0, // 실제 좌표는 geocode로 다시 가져오거나 기존 값 사용
+      lng: 0,
+    });
+    setShowSaveModal(true);
+  };
+
+  // 장소 저장 완료
+  const handleSavePlace = async () => {
+    if (!pendingSaveAddress || !saveName.trim()) return;
+
+    // 좌표 가져오기
+    const coords = await geocodeAddress(pendingSaveAddress.address);
+    const finalCoords = coords || generateFallbackCoordinates(pendingSaveAddress.address);
+
+    addPlace({
+      name: saveName.trim(),
+      address: pendingSaveAddress.address,
+      lat: finalCoords.lat,
+      lng: finalCoords.lng,
+      icon: saveIcon,
+    });
+
+    setShowSaveModal(false);
+    setSaveName('');
+    setSaveIcon('⭐');
+    setPendingSaveAddress(null);
+  };
+
   return (
     <div className="space-y-2">
       {label && (
@@ -291,8 +343,54 @@ export default function AddressSearch({
         </button>
       </div>
 
+      {/* 저장된 장소 */}
+      {showSavedPlaces && places.length > 0 && (
+        <div className="mt-3">
+          <p className="text-xs text-gray-500 mb-2">자주 가는 장소</p>
+          <div className="flex flex-wrap gap-2">
+            {places.slice(0, 5).map((place) => (
+              <button
+                key={place.id}
+                type="button"
+                onClick={() => handleSelectSavedPlace(place)}
+                className="group flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-all"
+              >
+                <span>{place.icon}</span>
+                <span className="font-medium">{place.name}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removePlace(place.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 ml-1 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 현재 주소 저장 버튼 */}
+      {showSavedPlaces && internalValue && value && (
+        <button
+          type="button"
+          onClick={handleStartSavePlace}
+          className="mt-2 flex items-center gap-1.5 text-xs text-gray-500 hover:text-black transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+          이 장소 저장하기
+        </button>
+      )}
+
       {/* 도움말 */}
-      <p className="text-xs text-gray-500 px-1">
+      <p className="text-xs text-gray-500 px-1 mt-2">
         주소 찾기 버튼을 클릭하거나, 현위치 버튼으로 지도에서 선택하거나, 직접 입력 후 Enter를 눌러주세요
       </p>
 
@@ -304,6 +402,75 @@ export default function AddressSearch({
         initialLat={currentLocation.lat}
         initialLng={currentLocation.lng}
       />
+
+      {/* 장소 저장 모달 */}
+      {showSaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowSaveModal(false)} />
+          <div className="relative bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-lg font-bold mb-4">장소 저장</h3>
+
+            {/* 주소 표시 */}
+            <div className="bg-gray-100 rounded-xl p-3 mb-4">
+              <p className="text-sm text-gray-600 truncate">{pendingSaveAddress?.address}</p>
+            </div>
+
+            {/* 이름 입력 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">장소 이름</label>
+              <input
+                type="text"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder="예: 집, 회사, 학교"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-black focus:outline-none"
+                autoFocus
+              />
+            </div>
+
+            {/* 아이콘 선택 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">아이콘</label>
+              <div className="flex flex-wrap gap-2">
+                {PLACE_ICONS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSaveIcon(item.icon)}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl text-xl transition-all ${
+                      saveIcon === item.icon
+                        ? 'bg-black text-white ring-2 ring-black ring-offset-2'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                    title={item.label}
+                  >
+                    {item.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveModal(false)}
+                className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePlace}
+                disabled={!saveName.trim()}
+                className="flex-1 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
