@@ -53,6 +53,15 @@ router.get('/points/:customerId', pointsController.getPointsBalance.bind(pointsC
 router.post('/points/use', pointsController.usePoints.bind(pointsController));
 router.post('/points/earn', pointsController.earnRideReward.bind(pointsController));
 
+// ========== Debug Routes ==========
+router.get('/debug/drivers', async (req, res) => {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  const drivers = await prisma.user.findMany({ where: { role: 'DRIVER' } });
+  const trips = await prisma.trip.findMany({ include: { driver: true, bookings: true } });
+  res.json({ drivers, trips });
+});
+
 // ========== Health Check ==========
 router.get('/health', (req, res) => {
   res.json({
