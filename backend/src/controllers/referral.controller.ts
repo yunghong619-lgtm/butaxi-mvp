@@ -114,7 +114,7 @@ export class ReferralController {
       }
 
       // 초대 코드 소유자 찾기
-      const referrer = await prisma.user.findUnique({
+      const referrer = await prisma.user.findFirst({
         where: { referralCode },
       });
 
