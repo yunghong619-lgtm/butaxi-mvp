@@ -7,13 +7,41 @@ import VehicleCard from '../../components/VehicleCard';
 export default function DriverHome() {
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // 테스트용 기사 ID (localStorage 또는 기본값)
-  const driverId = localStorage.getItem('butaxi_driver_id') || 'cmkce151w0002l12rbs8w4loc';
+  const [driverId, setDriverId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTrips();
+    initializeDriver();
   }, []);
+
+  const initializeDriver = async () => {
+    try {
+      // localStorage에서 드라이버 ID 확인
+      let savedDriverId = localStorage.getItem('butaxi_driver_id');
+
+      if (!savedDriverId) {
+        // 없으면 서버에서 첫 번째 드라이버 가져오기
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/debug/drivers`);
+        const data = await response.json();
+
+        if (data.drivers && data.drivers.length > 0) {
+          savedDriverId = data.drivers[0].id;
+          localStorage.setItem('butaxi_driver_id', savedDriverId);
+        }
+      }
+
+      if (savedDriverId) {
+        setDriverId(savedDriverId);
+      }
+    } catch (error) {
+      console.error('드라이버 초기화 실패:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (driverId) {
+      loadTrips();
+    }
+  }, [driverId]);
 
   const loadTrips = async () => {
     try {

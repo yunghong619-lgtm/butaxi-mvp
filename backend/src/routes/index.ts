@@ -62,6 +62,31 @@ router.get('/debug/drivers', async (req, res) => {
   res.json({ drivers, trips });
 });
 
+router.post('/debug/fix-trips', async (req, res) => {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+
+  // 첫 번째 드라이버 찾기
+  const driver = await prisma.user.findFirst({ where: { role: 'DRIVER' } });
+
+  if (!driver) {
+    return res.status(404).json({ success: false, error: '드라이버를 찾을 수 없습니다.' });
+  }
+
+  // driverId가 null인 모든 Trip을 업데이트
+  const result = await prisma.trip.updateMany({
+    where: { driverId: null },
+    data: { driverId: driver.id }
+  });
+
+  res.json({
+    success: true,
+    message: `${result.count}개의 Trip이 ${driver.name}에게 배정되었습니다.`,
+    driverId: driver.id,
+    count: result.count
+  });
+});
+
 // ========== Health Check ==========
 router.get('/health', (req, res) => {
   res.json({
