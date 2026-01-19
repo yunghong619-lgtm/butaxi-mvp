@@ -24,8 +24,9 @@ export default function DriverHome() {
         const data = await response.json();
 
         if (data.drivers && data.drivers.length > 0) {
-          savedDriverId = data.drivers[0].id;
-          localStorage.setItem('butaxi_driver_id', savedDriverId);
+          const firstDriverId = data.drivers[0].id as string;
+          savedDriverId = firstDriverId;
+          localStorage.setItem('butaxi_driver_id', firstDriverId);
         }
       }
 
@@ -44,6 +45,8 @@ export default function DriverHome() {
   }, [driverId]);
 
   const loadTrips = async () => {
+    if (!driverId) return;
+
     try {
       const response: any = await tripApi.getDriverTrips(driverId);
       if (response.success) {
